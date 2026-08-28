@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Moon, Flame, Zap, Wind, Watch } from 'lucide-react-native';
 import { Button } from '../src/components';
@@ -126,8 +126,13 @@ export default function CheckinScreen() {
       if (res.ok) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         router.back();
+      } else {
+        const detail = await res.text().catch(() => '');
+        Alert.alert('Check-in failed', `Server returned ${res.status}.${detail ? ` ${detail.slice(0, 200)}` : ''}`);
       }
-    } catch {}
+    } catch (err: any) {
+      Alert.alert('Could not reach the server', `${API}\n\n${err?.message || String(err)}`);
+    }
     setLoading(false);
   }
 
