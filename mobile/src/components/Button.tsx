@@ -15,8 +15,6 @@ interface Props {
   accessibilityHint?: string;
 }
 
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
-
 export function Button({ title, onPress, variant = 'primary', loading, disabled, accessibilityLabel, accessibilityHint }: Props) {
   const { reduceMotion } = useDevSettings();
   const { theme } = useTheme();
@@ -33,8 +31,7 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
     variant === 'primary' ? { color: '#fff' } : variant === 'secondary' ? { color: theme.text } : { color: theme.primaryLight };
 
   return (
-    <AnimatedPressable
-      style={[styles.button, variant === 'ghost' && styles.ghost, variantColorStyle, disabled && styles.disabled, animatedStyle]}
+    <Pressable
       onPressIn={() => { if (!reduceMotion) scale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); }}
       onPressOut={() => { if (!reduceMotion) scale.value = withSpring(1, { damping: 15, stiffness: 300 }); }}
       onPress={() => { if (!disabled && !loading) { Haptics.selectionAsync(); onPress(); } }}
@@ -43,12 +40,16 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
       accessibilityHint={accessibilityHint}
       accessibilityRole="button"
     >
-      {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : theme.primaryLight} />
-      ) : (
-        <Text style={[styles.text, textColorStyle]}>{title}</Text>
-      )}
-    </AnimatedPressable>
+      <Animated.View
+        style={[styles.button, variant === 'ghost' && styles.ghost, variantColorStyle, disabled && styles.disabled, animatedStyle]}
+      >
+        {loading ? (
+          <ActivityIndicator color={variant === 'primary' ? '#fff' : theme.primaryLight} />
+        ) : (
+          <Text style={[styles.text, textColorStyle]}>{title}</Text>
+        )}
+      </Animated.View>
+    </Pressable>
   );
 }
 
