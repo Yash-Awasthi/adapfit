@@ -21,6 +21,7 @@ import * as Haptics from 'expo-haptics';
 import { API_BASE_URL } from '../../src/services/config';
 import { useUserStore } from '../../src/stores';
 import { useTheme, AccentName } from '../../src/services/theme';
+import { NotificationSetup } from '../../src/components/NotificationSetup';
 
 const API = API_BASE_URL;
 
@@ -202,6 +203,7 @@ export default function SettingsScreen() {
             thumbColor="#fff"
           />
         </View>
+        <NotificationSetup />
       </View>
 
       {/* Data Export */}
