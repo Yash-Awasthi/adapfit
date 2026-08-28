@@ -33,11 +33,11 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS user_baselines (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-    baseline_hrv_rmssd NUMERIC(6,2),
-    baseline_rhr NUMERIC(4,1),
-    baseline_sleep_score NUMERIC(4,1),
+    hrv_mean_rmssd NUMERIC(6,2) DEFAULT 50.0,
+    hrv_std_rmssd NUMERIC(6,2) DEFAULT 10.0,
+    rhr_baseline NUMERIC(4,1) DEFAULT 65.0,
+    sleep_target_hours NUMERIC(4,1) DEFAULT 8.0,
     chronic_load_28d NUMERIC(8,2) DEFAULT 500,
-    chronic_load_7d NUMERIC(8,2) DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id)
 );
