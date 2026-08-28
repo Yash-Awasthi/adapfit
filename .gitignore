@@ -20,6 +20,7 @@ mobile/android/.gradle/
 mobile/.expo/
 backend/*.db
 backend/data/
+backend/app/data/store.json
 dist/
 build/
 
