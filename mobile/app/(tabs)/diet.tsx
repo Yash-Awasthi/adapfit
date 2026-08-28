@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Dimensions, Alert, ActivityIndicator,
 } from "react-native";
 import { Plus, Camera, Utensils, Flame, Dumbbell, Droplets, Target, X } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
+import { api } from "../../src/services/api";
 import { useTheme } from "../../src/services/theme";
 import { API_BASE_URL } from "../../src/services/config";
 import { useUserStore } from "../../src/stores";
@@ -109,6 +111,33 @@ export default function DietScreen() {
     } catch {}
   };
 
+  const [analyzingPhoto, setAnalyzingPhoto] = useState(false);
+
+  const photoLog = async () => {
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) {
+      Alert.alert("Camera permission needed", "Enable camera access to log a meal from a photo.");
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({ base64: true, quality: 0.5 });
+    if (result.canceled || !result.assets?.[0]?.base64) return;
+
+    setAnalyzingPhoto(true);
+    try {
+      const res = await api.photoLogMeal(result.assets[0].base64, "snack", userId);
+      if (res.foods.length === 0) {
+        Alert.alert("Couldn't identify the meal", res.suggestions[0] || "Try a clearer photo, or log it manually.");
+      } else {
+        Alert.alert("Meal logged", res.foods.map((f) => f.name).join(", "));
+      }
+      loadDaily();
+      loadChart();
+    } catch {
+      Alert.alert("Couldn't analyze photo", "Check your connection and try again.");
+    }
+    setAnalyzingPhoto(false);
+  };
+
   const quickAdd = async (food: QuickFood) => {
     try {
       await fetch(`${API}/api/v1/diet/quick-add/${encodeURIComponent(food.name)}?user_id=${userId}`, {
@@ -204,8 +233,8 @@ export default function DietScreen() {
         <TouchableOpacity style={[s.fab, { backgroundColor: "#8B5CF6" }]} onPress={() => setShowCustomAdd(true)}>
           <Dumbbell size={20} color="#FFF" />
         </TouchableOpacity>
-        <TouchableOpacity style={[s.fab, { backgroundColor: "#10B981" }]}>
-          <Camera size={20} color="#FFF" />
+        <TouchableOpacity style={[s.fab, { backgroundColor: "#10B981" }]} onPress={photoLog} disabled={analyzingPhoto}>
+          {analyzingPhoto ? <ActivityIndicator size="small" color="#FFF" /> : <Camera size={20} color="#FFF" />}
         </TouchableOpacity>
       </View>
 

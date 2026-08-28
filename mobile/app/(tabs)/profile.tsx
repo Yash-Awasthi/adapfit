@@ -4,7 +4,9 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { SectionHeader, LoadingScreen } from '../../src/components';
 import { WorkoutHeatmap } from '../../src/components/WorkoutHeatmap';
+import PersonalBestsWall from '../../src/components/PersonalBestsWall';
 import { useTheme } from '../../src/services/theme';
+import { useUserStore } from '../../src/stores/userStore';
 import { API_BASE_URL } from '../../src/services/config';
 
 const API = API_BASE_URL;
@@ -26,7 +28,7 @@ function BodyMeasureRow({ label, apiPath, unit, userId, theme }: { label: string
         }
       })
       .catch(() => {});
-  }, []);
+  }, [userId]);
   return (
     <View style={styles.measureRow}>
       <Text style={[styles.measureLabel, { color: theme.textSecondary }]}>{label}</Text>
@@ -37,6 +39,7 @@ function BodyMeasureRow({ label, apiPath, unit, userId, theme }: { label: string
 
 export default function ProfileScreen() {
   const { theme } = useTheme();
+  const userId = useUserStore((s) => s.userId);
   const router = useRouter();
   const [health, setHealth] = useState<HealthData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,11 +68,14 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <SectionHeader title="Body Measurements" />
         <View style={[styles.card, { backgroundColor: theme.surface }]}>
-          <BodyMeasureRow label="Weight" apiPath="weight_kg" unit="kg" userId="default" theme={theme} />
-          <BodyMeasureRow label="Body Fat" apiPath="body_fat_pct" unit="%" userId="default" theme={theme} />
-          <BodyMeasureRow label="Waist" apiPath="waist_cm" unit="cm" userId="default" theme={theme} />
-          <BodyMeasureRow label="Muscle" apiPath="muscle_mass_kg" unit="kg" userId="default" theme={theme} />
+          <BodyMeasureRow label="Weight" apiPath="weight_kg" unit="kg" userId={userId} theme={theme} />
+          <BodyMeasureRow label="Body Fat" apiPath="body_fat_pct" unit="%" userId={userId} theme={theme} />
+          <BodyMeasureRow label="Waist" apiPath="waist_cm" unit="cm" userId={userId} theme={theme} />
+          <BodyMeasureRow label="Muscle" apiPath="muscle_mass_kg" unit="kg" userId={userId} theme={theme} />
         </View>
+
+        <SectionHeader title="Personal Bests" />
+        <PersonalBestsWall userId={userId} />
 
         <SectionHeader title="Workout History" />
         <WorkoutHeatmap workoutDates={workoutDates} />

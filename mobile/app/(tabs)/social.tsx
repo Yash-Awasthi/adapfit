@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, Alert,
+  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
 } from 'react-native';
 import { Trophy, Users, TrendingUp, Plus, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';

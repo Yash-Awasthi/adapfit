@@ -235,6 +235,19 @@ export const api = {
   getFullRoutine: (muscles: string[] = ['chest', 'back', 'quadriceps']) =>
     request<any>(`/api/v1/routine/full?target_muscles=${encodeURIComponent(muscles.join(','))}`),
 
+  // Photo-based meal logging
+  photoLogMeal: (imageBase64: string, mealType = 'snack', userId = 'default') =>
+    request<{
+      logged: boolean;
+      record: any;
+      foods: { name: string; portion_grams: number; calories: number }[];
+      confidence: number;
+      suggestions: string[];
+    }>(`/api/v1/diet/photo-log?user_id=${userId}`, {
+      method: 'POST',
+      body: JSON.stringify({ image_base64: imageBase64, meal_type: mealType }),
+    }),
+
   // Voice & Natural Language Workout Logging
   parseVoiceWorkout: (text: string) =>
     request<{
@@ -315,6 +328,16 @@ export const api = {
       '/api/v1/voice-engine/speak',
       { method: 'POST', body: JSON.stringify({ text, voice }) }
     ),
+
+  // Sleep
+  getSleepAnalysis: (userId: string, days = 7) =>
+    request<{
+      score: number; grade: string; consistency_score: number;
+      avg_duration_hours: number; avg_efficiency: number;
+      deep_sleep_pct: number; rem_sleep_pct: number;
+      consistency_trend: string; recommendations: string[];
+      stage_breakdown: { name: string; minutes: number; percentage: number }[];
+    }>(`/api/v1/sleep/analysis?user_id=${userId}&days=${days}`),
 
   // Health Status
   health: () =>
