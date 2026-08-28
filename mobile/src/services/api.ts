@@ -141,6 +141,24 @@ export const api = {
       LONG_CACHE_TTL // 5 min - breathing exercises never change
     ),
 
+  // Meditation
+  getMeditationSessions: () =>
+    request<{
+      sessions: {
+        id: string; name: string; category: string; duration_minutes: number;
+        difficulty: string; benefits: string[]; best_time: string; tags: string[];
+        steps_count: number;
+      }[];
+    }>('/api/v1/meditation', undefined, LONG_CACHE_TTL),
+
+  getMeditationSession: (sessionId: string) =>
+    request<{
+      id: string; name: string; category: string; duration_minutes: number;
+      difficulty: string;
+      steps: { step: number; instruction: string; duration_seconds: number }[];
+      benefits: string[]; best_time: string; tags: string[];
+    }>(`/api/v1/meditation/${sessionId}`, undefined, LONG_CACHE_TTL),
+
   // Trends & Injury Risk
   getAcwr: (userId: string) =>
     request<{ acwr: number; acwr_status: string; acute_workload_7d: number; chronic_workload_28d: number }>(
