@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet,
+  View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, Alert,
 } from 'react-native';
 import { Trophy, Users, TrendingUp, Plus, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -90,8 +90,12 @@ export default function SocialScreen() {
       } else if (res.status === 409) {
         setSelectedChallenge(id);
         setMode('leaderboard');
+      } else {
+        Alert.alert('Could not join challenge', `Server returned ${res.status}.`);
       }
-    } catch {}
+    } catch (err: any) {
+      Alert.alert('Could not reach the server', err?.message || String(err));
+    }
   }
 
   async function createChallenge() {
@@ -112,8 +116,12 @@ export default function SocialScreen() {
         setNewName('');
         setNewDesc('');
         fetchChallenges();
+      } else {
+        Alert.alert('Could not create challenge', `Server returned ${res.status}.`);
       }
-    } catch {}
+    } catch (err: any) {
+      Alert.alert('Could not reach the server', err?.message || String(err));
+    }
   }
 
   function daysLeft(endsAt: string) {

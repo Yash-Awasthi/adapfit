@@ -140,19 +140,25 @@ export default function DietScreen() {
 
   const quickAdd = async (food: QuickFood) => {
     try {
-      await fetch(`${API}/api/v1/diet/quick-add/${encodeURIComponent(food.name)}?user_id=${userId}`, {
+      const res = await fetch(`${API}/api/v1/diet/quick-add/${encodeURIComponent(food.name)}?user_id=${userId}`, {
         method: "POST",
       });
-      setShowQuickAdd(false);
-      loadDaily();
-      loadChart();
-    } catch {}
+      if (res.ok) {
+        setShowQuickAdd(false);
+        loadDaily();
+        loadChart();
+      } else {
+        Alert.alert("Couldn't add food", `Server returned ${res.status}.`);
+      }
+    } catch (err: any) {
+      Alert.alert("Couldn't reach the server", err?.message || String(err));
+    }
   };
 
   const customAdd = async () => {
     if (!customName || !customCal) return;
     try {
-      await fetch(`${API}/api/v1/diet/log?user_id=${userId}`, {
+      const res = await fetch(`${API}/api/v1/diet/log?user_id=${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -161,11 +167,17 @@ export default function DietScreen() {
           carbs_g: 0, fat_g: 0, meal_type: "snack",
         }),
       });
-      setShowCustomAdd(false);
-      setCustomName(""); setCustomCal(""); setCustomProtein("");
-      loadDaily();
-      loadChart();
-    } catch {}
+      if (res.ok) {
+        setShowCustomAdd(false);
+        setCustomName(""); setCustomCal(""); setCustomProtein("");
+        loadDaily();
+        loadChart();
+      } else {
+        Alert.alert("Couldn't add food", `Server returned ${res.status}.`);
+      }
+    } catch (err: any) {
+      Alert.alert("Couldn't reach the server", err?.message || String(err));
+    }
   };
 
   const caloriePct = Math.round((totals.calories / TARGETS.calories) * 100);

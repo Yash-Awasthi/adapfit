@@ -86,14 +86,19 @@ export default function ProfileScreen() {
 
     setUploadingPhoto(true);
     try {
-      await fetch(`${API}/api/v1/progress-photos?user_id=${userId}`, {
+      const res = await fetch(`${API}/api/v1/progress-photos?user_id=${userId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ photo_uri: result.assets[0].uri, angle: 'front' }),
       });
-      loadPhotoCompare();
-    } catch {
-      Alert.alert("Couldn't save photo", 'Check your connection and try again.');
+      if (res.ok) {
+        loadPhotoCompare();
+      } else {
+        const detail = await res.text().catch(() => '');
+        Alert.alert("Couldn't save photo", `Server returned ${res.status}.${detail ? ` ${detail.slice(0, 200)}` : ''}`);
+      }
+    } catch (err: any) {
+      Alert.alert("Couldn't save photo", err?.message || String(err));
     }
     setUploadingPhoto(false);
   };

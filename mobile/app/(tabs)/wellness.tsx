@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Animated,
   StyleSheet,
+  Alert,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Wind, Brain, TrendingUp, TrendingDown, Minus, Droplets, Plus, Clock } from 'lucide-react-native';
@@ -108,7 +109,9 @@ export default function WellnessScreen() {
       await api.logHydration(userId, amount, 'water');
       const updated = await api.getHydrationToday(userId);
       setHydration(updated);
-    } catch {}
+    } catch (err: any) {
+      Alert.alert('Could not log water', err?.message || String(err));
+    }
   }
 
   async function logMood() {
@@ -127,8 +130,12 @@ export default function WellnessScreen() {
       if (res.ok) {
         setLogged(true);
         fetchData();
+      } else {
+        Alert.alert('Check-in failed', `Server returned ${res.status}.`);
       }
-    } catch {}
+    } catch (err: any) {
+      Alert.alert('Could not reach the server', err?.message || String(err));
+    }
   }
 
   function toggleTag(tag: string) {
