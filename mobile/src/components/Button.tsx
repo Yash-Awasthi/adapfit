@@ -3,6 +3,7 @@ import { Text, StyleSheet, ActivityIndicator, Pressable } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { useDevSettings } from '../services/devSettings';
+import { useTheme } from '../services/theme';
 
 interface Props {
   title: string;
@@ -18,12 +19,22 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function Button({ title, onPress, variant = 'primary', loading, disabled, accessibilityLabel, accessibilityHint }: Props) {
   const { reduceMotion } = useDevSettings();
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 
+  const variantColorStyle =
+    variant === 'primary'
+      ? { backgroundColor: theme.primary }
+      : variant === 'secondary'
+      ? { backgroundColor: theme.surface }
+      : null;
+  const textColorStyle =
+    variant === 'primary' ? { color: '#fff' } : variant === 'secondary' ? { color: theme.text } : { color: theme.primaryLight };
+
   return (
     <AnimatedPressable
-      style={[styles.button, styles[variant as keyof typeof styles], disabled && styles.disabled, animatedStyle]}
+      style={[styles.button, variant === 'ghost' && styles.ghost, variantColorStyle, disabled && styles.disabled, animatedStyle]}
       onPressIn={() => { if (!reduceMotion) scale.value = withSpring(0.96, { damping: 15, stiffness: 300 }); }}
       onPressOut={() => { if (!reduceMotion) scale.value = withSpring(1, { damping: 15, stiffness: 300 }); }}
       onPress={() => { if (!disabled && !loading) { Haptics.selectionAsync(); onPress(); } }}
@@ -33,9 +44,9 @@ export function Button({ title, onPress, variant = 'primary', loading, disabled,
       accessibilityRole="button"
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#818CF8'} />
+        <ActivityIndicator color={variant === 'primary' ? '#fff' : theme.primaryLight} />
       ) : (
-        <Text style={[styles.text, styles[(variant + 'Text') as keyof typeof styles]]}>{title}</Text>
+        <Text style={[styles.text, textColorStyle]}>{title}</Text>
       )}
     </AnimatedPressable>
   );
@@ -49,12 +60,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primary: {
-    backgroundColor: '#6366F1',
-  },
-  secondary: {
-    backgroundColor: '#1E293B',
-  },
   ghost: {
     backgroundColor: 'transparent',
   },
@@ -64,14 +69,5 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontWeight: '600',
-  },
-  primaryText: {
-    color: '#fff',
-  },
-  secondaryText: {
-    color: '#F8FAFC',
-  },
-  ghostText: {
-    color: '#818CF8',
   },
 });
