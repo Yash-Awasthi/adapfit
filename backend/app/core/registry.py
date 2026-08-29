@@ -103,6 +103,7 @@ ROUTE_MAP = {
     "chronotype_api": ("/chronotype", ["Chronotype Analysis"]),
     "illness_api": ("/illness", ["Illness Detection"]),
     "recovery_api": ("/recovery", ["Recovery & Readiness"]),
+    "health_predictions_api": ("/predictions", ["Health Predictions"]),
     "blood_pressure_api": ("/blood-pressure", ["Blood Pressure"]),
     "hormonal_cycle_api": ("/hormonal-cycle", ["Hormonal Cycle"]),
     "sleep_tracking_api": ("/sleep-tracking", ["Sleep Tracking"]),
