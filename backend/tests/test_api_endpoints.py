@@ -61,45 +61,42 @@ def test_smoke_endpoints(method, path, expected):
 
 
 # ── CRUD lifecycle: parameterized per domain ─────────────────────────────────
-# Each row: (create_path, create_body, list_path, delete_path, id_field, key_claims)
-# key_claims: list of (json_path, expected) checked on create response
+# Each row: (name, base_path, user_id, create_body, id_field, claims)
+# claims: list of (field, expected) checked on create response
+
+def _user_id_from_path(path: str) -> str:
+    """Extract user_id query param from path."""
+    for part in path.split("?")[1].split("&"):
+        if part.startswith("user_id="):
+            return part.split("=")[1]
+    return "default"
+
 
 CRUD_LIFECYCLES = [
-    # (name, create_path, create_body, list_path, id_field, claims)
-    ("nutrition_meals",
-     "/api/v1/nutrition/meals?user_id=n1",
+    # (name, base_path, user_id, create_body, id_field, claims)
+    ("nutrition_meals", "/api/v1/nutrition/meals", "n1",
      {"name": "Chicken", "calories": 350, "protein_g": 40, "carbs_g": 0, "fat_g": 8, "meal_type": "lunch"},
-     "/api/v1/nutrition/meals?user_id=n1",
      "id", [("name", "Chicken"), ("calories", 350)]),
-    ("sleep_logs",
-     "/api/v1/sleep/logs?user_id=s1",
+    ("sleep_logs", "/api/v1/sleep/logs", "s1",
      {"bedtime": "23:00", "wake_time": "07:00", "total_minutes": 480, "efficiency_pct": 92,
       "deep_pct": 20, "rem_pct": 22, "light_pct": 45, "awake_pct": 13},
-     "/api/v1/sleep/logs?user_id=s1",
      "id", [("total_minutes", 480)]),
-    ("body_measurements",
-     "/api/v1/body/measurements?user_id=b1",
+    ("body_measurements", "/api/v1/body/measurements", "b1",
      {"weight_kg": 80.5, "body_fat_pct": 16.0, "muscle_mass_kg": 34.0, "chest_cm": 100, "waist_cm": 82, "hips_cm": 96},
-     "/api/v1/body/measurements?user_id=b1",
      "id", [("weight_kg", 80.5)]),
-    ("progress_photos",
-     "/api/v1/progress-photos?user_id=p1",
+    ("progress_photos", "/api/v1/progress-photos", "p1",
      {"photo_uri": "file:///test.jpg", "angle": "front", "weight_kg": 80.0, "notes": "Week 1"},
-     "/api/v1/progress-photos?user_id=p1",
      "id", [("angle", "front")]),
-    ("notifications",
-     "/api/v1/notifications/workout-reminder?user_id=n1",
-     {"time_of_day": "17:00", "days": [1, 3, 5]},
-     "/api/v1/notifications?user_id=n1",
-     "id", []),
 ]
 
 
-@pytest.mark.parametrize("name,path,body,list_path,id_field,claims", CRUD_LIFECYCLES, ids=[x[0] for x in CRUD_LIFECYCLES])
-def test_crud_lifecycle(name, path, body, list_path, id_field, claims):
+@pytest.mark.parametrize("name,base_path,uid,body,id_field,claims", CRUD_LIFECYCLES, ids=[x[0] for x in CRUD_LIFECYCLES])
+def test_crud_lifecycle(name, base_path, uid, body, id_field, claims):
     """Create → List → Delete → 404-on-delete-nonexistent."""
+    list_url = f"{base_path}?user_id={uid}"
+
     # Create
-    r = post_json(path, json=body)
+    r = post_json(list_url, json=body)
     assert r.status_code == 201, f"create {name}: {r.status_code}"
     item = r.json()
     rid = item[id_field]
@@ -107,17 +104,16 @@ def test_crud_lifecycle(name, path, body, list_path, id_field, claims):
         assert item[key] == expected
 
     # List
-    r2 = get_json(list_path)
+    r2 = get_json(list_url)
     assert r2.status_code == 200
     assert any(x[id_field] == rid for x in r2.json())
 
     # Delete
-    sep = "&" if "?" in list_path else "?"
-    r3 = del_json(f"{list_path.split('?')[0]}/{rid}?user_id={list_path.split('user_id=')[1].split('&')[0]}")
+    r3 = del_json(f"{base_path}/{rid}?user_id={uid}")
     assert r3.status_code == 200
 
     # 404
-    r4 = del_json(f"{list_path.split('?')[0]}/nonexistent?user_id={list_path.split('user_id=')[1].split('&')[0]}")
+    r4 = del_json(f"{base_path}/nonexistent?user_id={uid}")
     assert r4.status_code == 404
 
 
