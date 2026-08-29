@@ -93,6 +93,7 @@ ROUTE_MAP = {
     "activity_recognition_api": ("/activity", ["Activity Recognition"]),
     "adaptive_workouts_api": ("/workouts/adaptive", ["Adaptive Workouts"]),
     "i18n_api": ("/i18n", ["Internationalization"]),
+    "healthkit_api": ("/healthkit", ["HealthKit Bridge"]),
     "camera_vitals": ("/camera", ["Camera Vitals"]),
     "stress_management": ("/stress", ["Stress Management"]),
     "digital_wellbeing_api": ("/wellbeing", ["Digital Wellbeing"]),
