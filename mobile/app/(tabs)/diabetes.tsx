@@ -23,9 +23,11 @@ export default function DiabetesScreen() {
       <View style={styles.tabBar}>
         {(['glucose', 'insulin', 'carbs', 'trends'] as const).map(tab => (
           <TouchableOpacity key={tab} style={[styles.tab, activeTab === tab && styles.activeTab]} onPress={() => setActiveTab(tab)}>
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'glucose' ? '🩸' : tab === 'insulin' ? '💉' : tab === 'carbs' ? '🍞' : '📈'}
-            </Text>
+            <Ionicons
+              name={tab === 'glucose' ? 'water' : tab === 'insulin' ? 'medkit-outline' : tab === 'carbs' ? 'nutrition-outline' : 'trending-up'}
+              size={20}
+              color={activeTab === tab ? '#FFF' : '#94A3B8'}
+            />
           </TouchableOpacity>
         ))}
       </View>

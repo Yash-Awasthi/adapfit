@@ -12,7 +12,11 @@ function RecipeCard({ recipe, onPress }: { recipe: any; onPress: () => void }) {
   return (
     <TouchableOpacity style={[ns.recipeCard, glass.light]} onPress={onPress}>
       <View style={[ns.recipeImage, { backgroundColor: (dietColors[recipe.diet?.[0]] || colors.primary) + '20' }]}>
-        <Text style={{ fontSize: 32 }}>{recipe.cuisine === 'Thai' ? '🍛' : recipe.cuisine === 'Mediterranean' ? '🥗' : recipe.cuisine === 'Italian' ? '🍝' : recipe.cuisine === 'Asian' ? '🥢' : '🍽️'}</Text>
+        <Ionicons
+          name={recipe.cuisine === 'Thai' ? 'flame-outline' : recipe.cuisine === 'Mediterranean' ? 'leaf-outline' : recipe.cuisine === 'Italian' ? 'pizza-outline' : recipe.cuisine === 'Asian' ? 'nutrition-outline' : 'restaurant-outline'}
+          size={32}
+          color={dietColors[recipe.diet?.[0]] || colors.primary}
+        />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[typography.label.lg as any, { color: colors.text.primary }]} numberOfLines={1}>{recipe.name}</Text>

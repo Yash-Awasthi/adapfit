@@ -13,7 +13,11 @@ function MemberCard({ member, onPress }: { member: any; onPress: () => void }) {
   return (
     <TouchableOpacity style={[ns.memberCard, { borderLeftColor: color }]} onPress={onPress}>
       <View style={[ns.memberAvatar, { backgroundColor: color + '20' }]}>
-        <Text style={{ fontSize: 20 }}>{member.relationship === 'parent' ? '👴' : member.relationship === 'child' ? '👶' : member.relationship === 'spouse' ? '💑' : '👤'}</Text>
+        <Ionicons
+          name={member.relationship === 'parent' ? 'person' : member.relationship === 'child' ? 'happy-outline' : member.relationship === 'spouse' ? 'heart' : 'person-outline'}
+          size={20}
+          color={color}
+        />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[typography.label.lg as any, { color: colors.text.primary }]}>{member.name}</Text>
