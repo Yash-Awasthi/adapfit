@@ -17,11 +17,13 @@ as silently dropped data.
 import json
 import uuid
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Any, Dict, List, Optional, Sequence, Union
 
 import asyncpg
 
 from app.core.db import get_pool
+from app.core.user_ids import normalize_user_id
 
 ConflictCols = Union[str, Sequence[str]]
 
@@ -37,9 +39,42 @@ async def _pool() -> asyncpg.Pool:
 
 
 def _normalize(value: Any) -> Any:
-    """uuid.UUID/datetime -> str, matching the shapes the in-memory backend produces."""
+    """
+    Convert a database value to the shape the in-memory backend produces.
+
+    numeric columns arrive as Decimal, which raises TypeError on arithmetic
+    with float, so every engine reading a score or a load would fail.
+    """
     if isinstance(value, (uuid.UUID, datetime, date)):
         return str(value) if isinstance(value, uuid.UUID) else value.isoformat()
+    if isinstance(value, Decimal):
+        return float(value)
+    return value
+
+
+_UUID_COLUMNS = {"id", "user_id", "workout_id", "share_id", "challenge_id"}
+_DATE_COLUMNS = {"log_date", "target_date", "start_date", "end_date", "date"}
+
+
+def _to_pg(column: str, value: Any) -> Any:
+    """
+    Coerce a JSON-shaped value into what asyncpg requires for its column type.
+
+    asyncpg binds by Python type rather than parsing strings, so a date or uuid
+    arriving as a string raises DataError instead of being cast.
+    """
+    if value is None or not isinstance(value, str):
+        return value
+    if column in _UUID_COLUMNS:
+        try:
+            return uuid.UUID(value)
+        except ValueError:
+            return value
+    if column in _DATE_COLUMNS:
+        try:
+            return date.fromisoformat(value[:10])
+        except ValueError:
+            return value
     return value
 
 
@@ -79,7 +114,7 @@ async def _insert(conn: asyncpg.Connection, table: str, allowed: Sequence[str], 
         placeholders = ", ".join(f"${i + 1}" for i in range(len(cols)))
         row = await conn.fetchrow(
             f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders}) RETURNING *",
-            *(data[c] for c in cols),
+            *(_to_pg(c, data[c]) for c in cols),
         )
     return _row(row)
 
@@ -94,7 +129,7 @@ async def _update(
     set_clause = ", ".join(f"{c} = ${i + 1}" for i, c in enumerate(cols))
     row = await conn.fetchrow(
         f"UPDATE {table} SET {set_clause} WHERE {where_col} = ${len(cols) + 1} RETURNING *",
-        *(data[c] for c in cols),
+        *(_to_pg(c, data[c]) for c in cols),
         where_val,
     )
     return _row(row)
@@ -110,7 +145,7 @@ async def _upsert(
     row = await conn.fetchrow(
         f"INSERT INTO {table} ({', '.join(cols)}) VALUES ({placeholders}) "
         f"ON CONFLICT ({', '.join(conflict)}) DO UPDATE SET {update_clause} RETURNING *",
-        *(data[c] for c in cols),
+        *(_to_pg(c, data[c]) for c in cols),
     )
     return _row(row)
 
@@ -128,12 +163,14 @@ class UserRepository:
             return await _insert(conn, "users", self._COLUMNS, user_data)
 
     async def get(self, user_id: str) -> Optional[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             row = await conn.fetchrow("SELECT * FROM users WHERE id = $1", user_id)
             return _row(row)
 
     async def update(self, user_id: str, updates: dict) -> Optional[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             return await _update(conn, "users", self._COLUMNS, updates, "id", user_id)
@@ -143,12 +180,14 @@ class BaselineRepository:
     _COLUMNS = ("user_id", "hrv_mean_rmssd", "hrv_std_rmssd", "rhr_baseline", "sleep_target_hours", "chronic_load_28d")
 
     async def set(self, user_id: str, baseline: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         baseline = {**baseline, "user_id": user_id}
         pool = await _pool()
         async with pool.acquire() as conn:
             return await _upsert(conn, "user_baselines", self._COLUMNS, baseline, "user_id")
 
     async def get(self, user_id: str) -> Optional[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             row = await conn.fetchrow("SELECT * FROM user_baselines WHERE user_id = $1", user_id)
@@ -164,6 +203,7 @@ class RecoveryLogRepository:
     )
 
     async def add(self, user_id: str, log: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         log = {**log, "user_id": user_id}
         log.setdefault("log_date", date.today().isoformat())
         pool = await _pool()
@@ -171,6 +211,7 @@ class RecoveryLogRepository:
             return await _upsert(conn, "daily_recovery_logs", self._COLUMNS, log, ("user_id", "log_date"))
 
     async def get(self, user_id: str, days: int = 28) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -181,6 +222,7 @@ class RecoveryLogRepository:
 
     async def get_sleep(self, user_id: str, days: int = 14) -> List[dict]:
         """Recovery logs that carry sleep data — there is no separate sleep_logs source in this app."""
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -203,6 +245,7 @@ class WorkoutRepository:
     )
 
     async def save(self, user_id: str, workout: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         # ponytail: warmup/cooldown have no columns in the live schema and are dropped here;
         # ceiling is losing those two fields in postgres/supabase mode until a migration adds them.
         exercises = workout.get("exercises") or []
@@ -231,6 +274,7 @@ class WorkoutRepository:
         return workouts
 
     async def get(self, user_id: str, days: int = 14) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -241,6 +285,7 @@ class WorkoutRepository:
             return await self._attach_exercises(conn, workouts)
 
     async def get_latest(self, user_id: str, count: int = 3) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -255,6 +300,7 @@ class WorkoutLogRepository:
     _JSON_KEYS = ("data",)
 
     async def add(self, user_id: str, log: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             saved = await conn.fetchrow(
@@ -265,6 +311,7 @@ class WorkoutLogRepository:
         return {**result["data"], "id": result["id"], "completed_at": result["completed_at"]}
 
     async def get(self, user_id: str, days: int = 28) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -282,6 +329,7 @@ class WorkloadRepository:
     _JSON_KEYS = ("data",)
 
     async def add(self, user_id: str, entry: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             saved = await conn.fetchrow(
@@ -292,6 +340,7 @@ class WorkloadRepository:
         return {**result["data"], "recorded_at": result["recorded_at"]}
 
     async def get(self, user_id: str, days: int = 28) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             rows = await conn.fetch(
@@ -310,6 +359,7 @@ class HealthMetricRepository:
     _JSON_KEYS = ("data",)
 
     async def add(self, user_id: str, metric: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             saved = await conn.fetchrow(
@@ -320,6 +370,7 @@ class HealthMetricRepository:
         return {**result["data"], "id": result["id"], "recorded_at": result["recorded_at"]}
 
     async def get(self, user_id: str, metric_type: Optional[str] = None, days: int = 30) -> List[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             if metric_type:
@@ -345,6 +396,7 @@ class DietPlanRepository:
     _JSON_KEYS = ("data",)
 
     async def save(self, user_id: str, plan: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             saved = await conn.fetchrow(
@@ -356,6 +408,7 @@ class DietPlanRepository:
         return {**result["data"], "user_id": user_id}
 
     async def get(self, user_id: str) -> Optional[dict]:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             row = await conn.fetchrow("SELECT * FROM diet_plans WHERE user_id = $1", user_id)
@@ -381,6 +434,7 @@ class AgentMemoryRepository:
     }
 
     async def get(self, user_id: str) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         pool = await _pool()
         async with pool.acquire() as conn:
             row = await conn.fetchrow("SELECT * FROM agent_memory WHERE user_id = $1", user_id)
@@ -391,6 +445,7 @@ class AgentMemoryRepository:
         return _decode_json(_row(row), self._JSON_KEYS)
 
     async def update(self, user_id: str, updates: dict) -> dict:
+        user_id = _to_pg("user_id", normalize_user_id(user_id))
         data = _encode_json({**updates, "user_id": user_id}, self._JSON_KEYS)
         pool = await _pool()
         async with pool.acquire() as conn:

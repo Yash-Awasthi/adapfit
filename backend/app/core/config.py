@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     
     # Postgres (asyncpg pool; empty keeps the in-memory fallback active)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "")
+    DB_POOL_MAX_SIZE: int = int(os.getenv("DB_POOL_MAX_SIZE", "4"))
 
     # Supabase
     SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")

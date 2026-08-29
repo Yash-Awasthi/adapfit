@@ -306,12 +306,36 @@ class StorageEngine:
         return sleep_logs[-days:]
 
     async def get_stats(self) -> dict:
+        backend = "supabase" if _USE_SUPABASE else ("postgres" if _USE_POSTGRES else "in_memory")
+
+        if _USE_SUPABASE or _USE_POSTGRES:
+            # Counting the in-memory dicts while a database backs the store
+            # reports zero for a populated database, which reads as data loss.
+            from app.core.db import get_pool
+
+            pool = await get_pool()
+            if pool is not None:
+                async with pool.acquire() as conn:
+                    counts = await conn.fetchrow(
+                        "SELECT (SELECT count(*) FROM users) AS users,"
+                        " (SELECT count(*) FROM daily_recovery_logs) AS recovery_logs,"
+                        " (SELECT count(*) FROM workouts) AS workouts,"
+                        " (SELECT count(*) FROM workout_logs) AS workout_logs"
+                    )
+                return {
+                    "users": counts["users"],
+                    "total_recovery_logs": counts["recovery_logs"],
+                    "total_workouts": counts["workouts"],
+                    "total_workout_logs": counts["workout_logs"],
+                    "backend": backend,
+                }
+
         return {
             "users": len(self.users),
             "total_recovery_logs": sum(len(v) for v in self.recovery_logs.values()),
             "total_workouts": sum(len(v) for v in self.workouts.values()),
             "total_workout_logs": sum(len(v) for v in self.workout_logs.values()),
-            "backend": "supabase" if _USE_SUPABASE else ("postgres" if _USE_POSTGRES else "in_memory"),
+            "backend": backend,
         }
 
 
