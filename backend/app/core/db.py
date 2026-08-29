@@ -22,9 +22,17 @@ async def get_pool() -> asyncpg.Pool | None:
     if not settings.DATABASE_URL:
         return None
     if _pool is None:
+        # Supabase's session pooler allows 15 clients per project, shared across
+        # every process pointing at it. asyncpg defaults to 10, so two processes
+        # exhaust it. Transaction mode raises that ceiling but reuses server-side
+        # connections between statements, which makes prepared statements unsafe.
+        transaction_mode = ":6543" in settings.DATABASE_URL
         _pool = await asyncpg.create_pool(
             settings.DATABASE_URL,
             init=_init_connection,
+            min_size=1,
+            max_size=settings.DB_POOL_MAX_SIZE,
+            statement_cache_size=0 if transaction_mode else 100,
         )
     return _pool
 
