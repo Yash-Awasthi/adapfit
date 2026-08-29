@@ -9,9 +9,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pathlib import Path
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
+from app.core.limiter import make_limiter
 
 from app.core.config import settings
 from app.core.logging_config import setup_logging, get_logger
@@ -39,7 +38,7 @@ async def lifespan(app: FastAPI):
 
 
 # Rate limiter
-limiter = Limiter(key_func=get_remote_address)
+limiter = make_limiter()
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -49,7 +48,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.state.limiter = limiter
-app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+if settings.RATE_LIMITING_ENABLED:
+    from slowapi import _rate_limit_exceeded_handler
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS
 import os as _os

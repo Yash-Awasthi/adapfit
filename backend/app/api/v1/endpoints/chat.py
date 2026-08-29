@@ -9,8 +9,7 @@ import httpx
 from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from app.core.limiter import make_limiter
 
 from app.core.config import settings
 from app.core.gemini import DEFAULT_MODEL, extract_text, gemini_endpoint
@@ -27,7 +26,7 @@ from app.services.learning_loop import learning_loop
 from app.core.workout_metrics import session_duration_minutes, session_load, session_rpe
 
 router = APIRouter()
-limiter = Limiter(key_func=get_remote_address)
+limiter = make_limiter()
 logger = logging.getLogger(__name__)
 
 

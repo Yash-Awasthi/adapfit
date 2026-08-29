@@ -78,9 +78,11 @@ class ValidationMiddleware(BaseHTTPMiddleware):
                 )
 
         # 2. Rate limiting (skip for /auth/ — per-email lockout is the protection there)
+        #    Also skip when RATE_LIMITING_ENABLED=false (tests, dev)
+        from app.core.config import settings
         client_ip = request.client.host if request.client else "unknown"
         category = self._get_category(request.url.path)
-        if category != "auth" and self._is_rate_limited(client_ip, category):
+        if settings.RATE_LIMITING_ENABLED and category != "auth" and self._is_rate_limited(client_ip, category):
             return Response(
                 content='{"error": "Rate limit exceeded. Please try again later."}',
                 status_code=429,

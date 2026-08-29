@@ -39,6 +39,7 @@ class Settings(BaseSettings):
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100
+    RATE_LIMITING_ENABLED: bool = os.getenv("RATE_LIMITING_ENABLED", "").lower() not in {"0", "false", "no"}
     
     # ML Engine
     ML_MIN_TRAINING_SAMPLES: int = 14
