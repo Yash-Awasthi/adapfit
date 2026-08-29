@@ -104,6 +104,11 @@ async def add_request_id(request: Request, call_next):
     return response
 
 
+# Prometheus metrics at root level
+from app.api.v1.endpoints.metrics import router as metrics_router
+app.include_router(metrics_router, prefix="/metrics", tags=["Observability"])
+
+
 # Static files
 static_dir = Path(__file__).parent / "static"
 if static_dir.exists():

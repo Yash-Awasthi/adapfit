@@ -212,7 +212,7 @@ ROUTE_MAP = {
 }
 
 # Prefixes to skip (these have special handling or are registered manually)
-SKIP_PREFIXES = {"/metrics"}  # metrics uses a different prefix pattern
+SKIP_PREFIXES = {"/metrics"}  # metrics is registered manually at root level in main.py
 
 
 def _strip_baked_prefix(router, baked_prefix: str) -> None:

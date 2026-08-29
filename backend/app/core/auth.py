@@ -236,8 +236,15 @@ class ApiKeyManager:
             return True
         return False
 
+    def get_key_info(self, raw_key: str) -> Optional[dict]:
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        key = self._keys.get(key_hash)
+        if not key:
+            return None
+        return {"name": key.name, "tier": key.tier, "rate_limit": key.rate_limit, "is_active": key.is_active, "created_at": key.created_at}
+
     def list_keys(self) -> list[dict]:
-        return [{"name": k.name, "tier": k.tier, "rate_limit": k.rate_limit, "active": k.is_active, "created_at": k.created_at} for k in self._keys.values()]
+        return [{"name": k.name, "tier": k.tier, "rate_limit": k.rate_limit, "is_active": k.is_active, "created_at": k.created_at} for k in self._keys.values()]
 
 
 api_key_manager = ApiKeyManager()

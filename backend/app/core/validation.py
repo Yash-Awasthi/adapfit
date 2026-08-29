@@ -90,9 +90,10 @@ class ValidationMiddleware(BaseHTTPMiddleware):
                 headers={"Retry-After": "60"},
             )
 
-        # 3. Security pattern detection on query params and path
-        full_url = str(request.url)
-        if self._detect_injection(full_url):
+        # 3. Security pattern detection on query params only (not URL path,
+        #    since legitimate API paths like /update and /delete match SQL keywords)
+        query_string = request.url.query or ""
+        if self._detect_injection(query_string):
             return Response(
                 content='{"error": "Invalid request detected"}',
                 status_code=400,
