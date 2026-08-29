@@ -9,9 +9,11 @@ import { colors, typography, spacing, radius, presets } from '../src/theme';
 
 import { API_V1 as API } from '../src/services/config';
 import { setToken } from '../src/services/authToken';
+import { useUserStore } from '../src/stores';
 
 export default function LoginScreen() {
   const router = useRouter();
+  const setUser = useUserStore((s) => s.setUser);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,6 +34,15 @@ export default function LoginScreen() {
       const data = await r.json();
       if (r.ok && data.tokens) {
         await setToken(data.tokens.access_token ?? null);
+        // The root layout redirects to onboarding whenever the store holds no
+        // profile, so the signed-in user has to be recorded before navigating.
+        if (data.user?.id) {
+          await setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.display_name ?? data.user.username ?? null,
+          });
+        }
         router.replace('/(tabs)');
       } else {
         Alert.alert('Login Failed', data.detail || 'Invalid credentials');
