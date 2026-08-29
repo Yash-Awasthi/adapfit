@@ -66,7 +66,9 @@ export default function TelemedicineScreen() {
         {DOCTORS.filter(d => selectedSpecialty === 'All' || d.specialty.toLowerCase().includes(selectedSpecialty.toLowerCase())).map(doctor => (
           <GlassCard key={doctor.id} variant="light" style={styles.doctorCard}>
             <View style={styles.doctorHeader}>
-              <Text style={styles.doctorAvatar}>{doctor.avatar}</Text>
+              <View style={[styles.doctorAvatar, { backgroundColor: doctor.color + '20' }]}>
+                <Ionicons name={doctor.avatar as any} size={22} color={doctor.color} />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.doctorName}>{doctor.name}</Text>
                 <Text style={styles.doctorSpecialty}>{doctor.specialty}</Text>

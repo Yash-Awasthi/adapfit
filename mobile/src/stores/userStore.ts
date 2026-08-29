@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
+import { restoreToken, setToken } from '../services/authToken';
 
 export interface UserProfile {
   id: string;
@@ -40,6 +41,8 @@ export const useUserStore = create<UserStore>((set, get) => ({
   loading: true,
 
   hydrate: async () => {
+    // Must land before the profile fetch below, which needs the header.
+    await restoreToken();
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       const userId = stored || 'default';
@@ -77,6 +80,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
   clearUser: async () => {
     await AsyncStorage.removeItem(STORAGE_KEY);
+    await setToken(null);
     set({ userId: 'default', profile: null });
   },
 }));

@@ -16,6 +16,7 @@ import { api } from '../../src/services/api';
 import { API_BASE_URL } from '../../src/services/config';
 import { useUserStore } from '../../src/stores';
 import { useTheme } from '../../src/services/theme';
+import { authHeader } from '../../src/services/authToken';
 
 const API = API_BASE_URL;
 
@@ -84,8 +85,8 @@ export default function WellnessScreen() {
   async function fetchData() {
     try {
       const [exRes, trendRes, hydData, medData] = await Promise.all([
-        fetch(`${API}/api/v1/mental-health/breathing-exercises`),
-        fetch(`${API}/api/v1/mental-health?user_id=${userId}&days=7`),
+        fetch(`${API}/api/v1/mental-health/breathing-exercises`, { headers: authHeader() }),
+        fetch(`${API}/api/v1/mental-health?user_id=${userId}&days=7`, { headers: authHeader() }),
         api.getHydrationToday(userId).catch(() => null),
         api.getMeditationSessions().catch(() => null),
       ]);
@@ -118,7 +119,7 @@ export default function WellnessScreen() {
     try {
       const res = await fetch(`${API}/api/v1/mental-health`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({
           user_id: userId,
           mood: selectedMood,

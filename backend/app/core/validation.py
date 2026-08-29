@@ -31,7 +31,10 @@ SQL_INJECTION_PATTERNS = [
 XSS_PATTERNS = [
     r"<script[^>]*>",
     r"javascript:",
-    r"on\w+\s*=",
+    # Inline event handlers are only dangerous inside a tag. Matching a bare
+    # "on<word>=" rejects ordinary query strings such as months=2 and
+    # session_id=abc, because "onths=" and "on_id=" satisfy it.
+    r"<[^>]*\son\w+\s*=",
     r"<iframe",
     r"<object",
     r"<embed",

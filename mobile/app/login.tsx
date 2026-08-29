@@ -7,7 +7,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets } from '../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
+import { API_V1 as API } from '../src/services/config';
+import { setToken } from '../src/services/authToken';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -30,7 +31,7 @@ export default function LoginScreen() {
       });
       const data = await r.json();
       if (r.ok && data.tokens) {
-        // Store tokens (in production: AsyncStorage)
+        await setToken(data.tokens.access_token ?? null);
         router.replace('/(tabs)');
       } else {
         Alert.alert('Login Failed', data.detail || 'Invalid credentials');
