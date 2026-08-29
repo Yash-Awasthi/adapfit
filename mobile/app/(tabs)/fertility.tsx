@@ -15,9 +15,11 @@ export default function FertilityScreen() {
       <View style={styles.tabBar}>
         {(['cycle', 'log', 'insights', 'predict'] as const).map(tab => (
           <TouchableOpacity key={tab} style={[styles.tab, activeTab === tab && styles.activeTab]} onPress={() => setActiveTab(tab)}>
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'cycle' ? '🔄' : tab === 'log' ? '📝' : tab === 'insights' ? '📊' : '🔮'}
-            </Text>
+            <Ionicons
+              name={tab === 'cycle' ? 'sync' : tab === 'log' ? 'create-outline' : tab === 'insights' ? 'stats-chart' : 'sparkles'}
+              size={20}
+              color={activeTab === tab ? '#FFF' : '#94A3B8'}
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -72,7 +74,12 @@ export default function FertilityScreen() {
             <View style={styles.logCard}>
               <Text style={styles.logLabel}>LH Strip Result</Text>
               <View style={styles.lhOptions}>
-                <TouchableOpacity style={[styles.lhBtn, styles.lhPositive]}><Text style={styles.lhText}>Positive ✅</Text></TouchableOpacity>
+                <TouchableOpacity style={[styles.lhBtn, styles.lhPositive]}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <Text style={styles.lhText}>Positive</Text>
+                    <Ionicons name="checkmark-circle" size={16} color="#FFF" />
+                  </View>
+                </TouchableOpacity>
                 <TouchableOpacity style={styles.lhBtn}><Text style={styles.lhText}>Negative</Text></TouchableOpacity>
               </View>
             </View>

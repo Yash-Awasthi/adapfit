@@ -94,7 +94,11 @@ export default function CheckinScreen() {
   useEffect(() => {
     fetchHealthData().then((data) => {
       setHealth(data);
-      if (data.source !== 'simulated') setSleep(Math.round(data.sleepHours));
+      // Seed the slider only from a real device reading; sleepHours is absent
+      // when the health source is unavailable.
+      if (data.source !== 'simulated' && typeof data.sleepHours === 'number') {
+        setSleep(Math.round(data.sleepHours));
+      }
     });
   }, []);
 

@@ -15,9 +15,11 @@ export default function PregnancyScreen() {
       <View style={styles.tabBar}>
         {(['baby', 'kick', 'appointments', 'tips'] as const).map(tab => (
           <TouchableOpacity key={tab} style={[styles.tab, activeTab === tab && styles.activeTab]} onPress={() => setActiveTab(tab)}>
-            <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>
-              {tab === 'baby' ? '👶' : tab === 'kick' ? '🦶' : tab === 'appointments' ? '📅' : '💡'}
-            </Text>
+            <Ionicons
+              name={tab === 'baby' ? 'happy-outline' : tab === 'kick' ? 'footsteps-outline' : tab === 'appointments' ? 'calendar-outline' : 'bulb-outline'}
+              size={20}
+              color={activeTab === tab ? '#FFF' : '#94A3B8'}
+            />
           </TouchableOpacity>
         ))}
       </View>
