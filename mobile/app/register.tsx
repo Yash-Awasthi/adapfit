@@ -8,8 +8,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets } from '../src/theme';
 
 import { API_V1 as API } from '../src/services/config';
+import { setToken } from '../src/services/authToken';
+import { useUserStore } from '../src/stores';
 export default function RegisterScreen() {
   const router = useRouter();
+  const setUser = useUserStore((s) => s.setUser);
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
@@ -40,6 +43,15 @@ export default function RegisterScreen() {
       });
       const data = await r.json();
       if (r.ok && data.tokens) {
+        await setToken(data.tokens.access_token ?? null);
+        // The root layout bounces to onboarding when the store has no profile.
+        if (data.user?.id) {
+          await setUser({
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.display_name ?? data.user.username ?? null,
+          });
+        }
         router.replace('/(tabs)');
       } else {
         Alert.alert('Registration Failed', data.detail || data.error || 'Please try again');
