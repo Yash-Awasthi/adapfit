@@ -1,7 +1,15 @@
 """Blood pressure analysis endpoints."""
-from fastapi import APIRouter
+import json
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+
+from app.services.blood_pressure import (
+    BPReading, classify_reading, calculate_pulse_pressure,
+    interpret_pulse_pressure, calculate_map, interpret_map,
+    analyze_trends, assess_risk,
+)
 
 router = APIRouter()
 
@@ -22,7 +30,6 @@ class BPRiskInput(BaseModel):
 
 @router.get("/blood-pressure/classify")
 def classify_bp(systolic: float, diastolic: float):
-    from app.services.blood_pressure import classify_reading, BPReading
     reading = BPReading(systolic=systolic, diastolic=diastolic)
     result = classify_reading(reading)
     return {
@@ -37,7 +44,6 @@ def classify_bp(systolic: float, diastolic: float):
 
 @router.get("/blood-pressure/pulse-pressure")
 def get_pulse_pressure(systolic: float, diastolic: float):
-    from app.services.blood_pressure import calculate_pulse_pressure, interpret_pulse_pressure
     pp = calculate_pulse_pressure(systolic, diastolic)
     return {
         "pulse_pressure": pp,
@@ -47,7 +53,6 @@ def get_pulse_pressure(systolic: float, diastolic: float):
 
 @router.get("/blood-pressure/map")
 def get_map(systolic: float, diastolic: float):
-    from app.services.blood_pressure import calculate_map, interpret_map
     map_val = calculate_map(systolic, diastolic)
     return {
         "mean_arterial_pressure": map_val,
@@ -58,16 +63,14 @@ def get_map(systolic: float, diastolic: float):
 @router.get("/blood-pressure/trends")
 def bp_trends(readings_json: str):
     """Analyze BP trends. Pass readings as JSON-encoded list of {systolic, diastolic, timestamp?}."""
-    import json
-    from app.services.blood_pressure import analyze_trends, BPReading
     try:
         raw = json.loads(readings_json)
     except json.JSONDecodeError:
-        return {"error": "Invalid JSON"}
+        raise HTTPException(status_code=422, detail="Invalid JSON")
     readings = [BPReading(**r) for r in raw]
     result = analyze_trends(readings)
     if result is None:
-        return {"error": "Need at least 3 readings for trend analysis"}
+        raise HTTPException(status_code=422, detail="Need at least 3 readings for trend analysis")
     return {
         "mean_systolic": result.mean_systolic,
         "mean_diastolic": result.mean_diastolic,
@@ -82,7 +85,6 @@ def bp_trends(readings_json: str):
 
 @router.post("/blood-pressure/risk")
 def assess_risk(body: BPRiskInput):
-    from app.services.blood_pressure import assess_risk, BPReading
     readings = [BPReading(systolic=r.systolic, diastolic=r.diastolic, timestamp=r.timestamp) for r in body.readings]
     result = assess_risk(
         readings,

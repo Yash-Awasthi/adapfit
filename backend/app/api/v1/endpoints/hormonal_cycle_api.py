@@ -1,7 +1,15 @@
 """Hormonal cycle tracking endpoints."""
-from fastapi import APIRouter
+import json
+
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional
+
+from app.services.hormonal_cycle import (
+    average_cycle_length, calculate_cycle_lengths,
+    predict_next_cycle, detect_phase, get_phase_info,
+    is_fertile, is_peak_fertility, correlate_symptoms, SymptomEntry,
+)
 
 router = APIRouter()
 
@@ -15,12 +23,10 @@ class SymptomInput(BaseModel):
 @router.get("/cycle/average-length")
 def get_average_cycle_length(period_starts_json: str):
     """Calculate average cycle length. Pass period starts as JSON array of ISO dates."""
-    import json
-    from app.services.hormonal_cycle import average_cycle_length, calculate_cycle_lengths
     try:
         starts = json.loads(period_starts_json)
     except json.JSONDecodeError:
-        return {"error": "Invalid JSON"}
+        raise HTTPException(status_code=422, detail="Invalid JSON")
     lengths = calculate_cycle_lengths(starts)
     avg = average_cycle_length(starts)
     return {
@@ -33,15 +39,13 @@ def get_average_cycle_length(period_starts_json: str):
 @router.get("/cycle/predict")
 def predict_cycle(period_starts_json: str):
     """Predict next cycle from historical period start dates."""
-    import json
-    from app.services.hormonal_cycle import predict_next_cycle
     try:
         starts = json.loads(period_starts_json)
     except json.JSONDecodeError:
-        return {"error": "Invalid JSON"}
+        raise HTTPException(status_code=422, detail="Invalid JSON")
     result = predict_next_cycle(starts)
     if result is None:
-        return {"error": "Need at least 1 period start date"}
+        raise HTTPException(status_code=422, detail="Need at least 1 period start date")
     return {
         "predicted_start": result.predicted_start,
         "predicted_end": result.predicted_end,
@@ -57,7 +61,6 @@ def predict_cycle(period_starts_json: str):
 @router.get("/cycle/phase")
 def get_phase(cycle_start: str, cycle_length: int, current_date: str):
     """Detect current cycle phase."""
-    from app.services.hormonal_cycle import detect_phase, get_phase_info
     phase = detect_phase(cycle_start, cycle_length, current_date)
     info = get_phase_info(phase)
     return {
@@ -72,7 +75,6 @@ def get_phase(cycle_start: str, cycle_length: int, current_date: str):
 @router.get("/cycle/fertility")
 def check_fertility(cycle_start: str, cycle_length: int, check_date: str):
     """Check if a date is in the fertile window."""
-    from app.services.hormonal_cycle import is_fertile, is_peak_fertility
     fertile = is_fertile(cycle_start, cycle_length, check_date)
     peak = is_peak_fertility(cycle_start, cycle_length, check_date)
     return {
@@ -85,12 +87,10 @@ def check_fertility(cycle_start: str, cycle_length: int, check_date: str):
 @router.post("/cycle/symptoms")
 def analyze_symptoms(symptoms: list[SymptomInput], period_starts_json: str):
     """Analyze symptom patterns across cycle phases."""
-    import json
-    from app.services.hormonal_cycle import correlate_symptoms, SymptomEntry
     try:
         starts = json.loads(period_starts_json)
     except json.JSONDecodeError:
-        return {"error": "Invalid JSON"}
+        raise HTTPException(status_code=422, detail="Invalid JSON")
 
     entries = [SymptomEntry(date=s.date, symptom=s.symptom, severity=s.severity) for s in symptoms]
     correlations = correlate_symptoms(entries, starts)
