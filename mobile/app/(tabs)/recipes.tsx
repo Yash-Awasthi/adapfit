@@ -6,8 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput } from 
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets, glass } from '../../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
-
+import { API_V1 as API } from '../../src/services/config';
 function RecipeCard({ recipe, onPress }: { recipe: any; onPress: () => void }) {
   const dietColors: Record<string, string> = { 'high-protein': colors.health.heart, vegan: colors.health.calm, keto: colors.health.energy, 'low-carb': colors.primary, 'gluten-free': colors.health.sleep };
   return (

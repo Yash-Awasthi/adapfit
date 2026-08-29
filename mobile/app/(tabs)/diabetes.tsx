@@ -16,7 +16,7 @@ export default function DiabetesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>💉 Diabetes Manager</Text>
+        <Text style={styles.headerTitle}>Diabetes Manager</Text>
         <Text style={styles.headerSubtitle}>Track glucose, insulin & carbs</Text>
       </View>
 
@@ -130,7 +130,7 @@ export default function DiabetesScreen() {
               <View style={styles.trendBar}>
                 <View style={[styles.trendFill, { width: '64%', backgroundColor: '#10B981' }]} />
               </View>
-              <Text style={styles.trendStatus}>✅ Within target range (70-180)</Text>
+              <Text style={styles.trendStatus}>Within target range (70-180)</Text>
             </View>
             <View style={styles.trendCard}>
               <Text style={styles.trendTitle}>Time in Range: 72%</Text>
@@ -144,7 +144,7 @@ export default function DiabetesScreen() {
               <View style={styles.trendBar}>
                 <View style={[styles.trendFill, { width: '68%', backgroundColor: '#F59E0B' }]} />
               </View>
-              <Text style={styles.trendStatus}>⚠️ Slightly above target (under 7%)</Text>
+              <Text style={styles.trendStatus}>Slightly above target (under 7%)</Text>
             </View>
           </>
         )}

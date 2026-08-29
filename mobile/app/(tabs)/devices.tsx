@@ -6,7 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets } from '../../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
+import { API_V1 as API } from '../../src/services/config';
 const api = async (p: string, o?: RequestInit) => { try { const r = await fetch(`${API}${p}`, { headers: { 'Content-Type': 'application/json' }, ...o }); return r.ok ? await r.json() : null; } catch { return null; } };
 
 const PLATFORMS = [
@@ -50,7 +50,7 @@ export default function DevicesScreen() {
   return (
     <ScrollView style={ds.container}>
       <View style={ds.header}>
-        <Text style={typography.heading.h1}>📱 Devices</Text>
+        <Text style={typography.heading.h1}>Devices</Text>
         <Text style={typography.body.sm}>Connect wearables and health platforms</Text>
       </View>
 

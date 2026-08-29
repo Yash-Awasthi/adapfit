@@ -61,7 +61,7 @@ export default function CircadianScreen() {
       <SectionHeaderPremium icon="trending-up" iconColor="#22C55E" title="Energy Curve" />
       <GlassCard variant="light" style={styles.sectionCard}>
         <InteractiveBarChart data={ENERGY_DATA} height={160} showValues />
-        <Text style={styles.energyInsight}>💡 Your peak focus hours are 9-11 AM. Schedule deep work here.</Text>
+        <Text style={styles.energyInsight}>Your peak focus hours are 9-11 AM. Schedule deep work here.</Text>
       </GlassCard>
 
       {/* Light Exposure */}

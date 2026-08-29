@@ -7,8 +7,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets } from '../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
-
+import { API_V1 as API } from '../src/services/config';
 export default function RegisterScreen() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState('');

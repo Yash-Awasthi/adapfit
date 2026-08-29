@@ -6,7 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, A
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets, getScoreColor } from '../../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
+import { API_V1 as API } from '../../src/services/config';
 const api = async (p: string, o?: RequestInit) => { try { const r = await fetch(`${API}${p}`, { headers: { 'Content-Type': 'application/json' }, ...o }); return r.ok ? await r.json() : null; } catch { return null; } };
 
 const MUSCLE_GROUPS = ['All', 'chest', 'back', 'shoulders', 'quads', 'hamstrings', 'glutes', 'core', 'biceps', 'triceps'];
@@ -54,7 +54,7 @@ export default function WorkoutsScreen() {
   return (
     <ScrollView style={ws.container} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}>
       <View style={ws.header}>
-        <Text style={typography.heading.h1}>🏋️ Workouts</Text>
+        <Text style={typography.heading.h1}>Workouts</Text>
         <Text style={typography.body.sm}>Exercise library, plans & tracking</Text>
       </View>
 
@@ -132,7 +132,7 @@ export default function WorkoutsScreen() {
           </View>
           {Object.keys(prs).length > 0 && (
             <>
-              <Text style={[typography.heading.h4, { marginTop: spacing.lg, marginBottom: spacing.sm }]}>🏆 Personal Records</Text>
+              <Text style={[typography.heading.h4, { marginTop: spacing.lg, marginBottom: spacing.sm }]}>Personal Records</Text>
               {Object.entries(prs).map(([ex, data]: [string, any]) => (
                 <View key={ex} style={ws.prRow}>
                   <Text style={typography.label.lg}>{ex}</Text>

@@ -16,7 +16,7 @@ export default function ChronicPainScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>💊 Chronic Pain Manager</Text>
+        <Text style={styles.headerTitle}>Chronic Pain Manager</Text>
         <Text style={styles.headerSubtitle}>Pain diary, triggers & relief tracking</Text>
       </View>
 
@@ -120,7 +120,7 @@ export default function ChronicPainScreen() {
                 <Text style={styles.cbtDesc}>{t.desc}</Text>
                 <Text style={styles.cbtEvidence}>Evidence: {t.evidence}</Text>
                 <TouchableOpacity style={styles.cbtStartBtn}>
-                  <Text style={styles.cbtStartText}>▶ Start Exercise</Text>
+                  <Text style={styles.cbtStartText}>Start Exercise</Text>
                 </TouchableOpacity>
               </View>
             ))}

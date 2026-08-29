@@ -6,8 +6,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'rea
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, spacing, radius, presets, glass } from '../../src/theme';
 
-const API = 'http://localhost:8000/api/v1';
-
+import { API_V1 as API } from '../../src/services/config';
 function MemberCard({ member, onPress }: { member: any; onPress: () => void }) {
   const relationshipColors: Record<string, string> = { parent: colors.health.heart, child: colors.health.sleep, spouse: '#EC4899', sibling: colors.health.energy, self: colors.primary };
   const color = relationshipColors[member.relationship] || colors.primary;
