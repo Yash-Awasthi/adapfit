@@ -91,6 +91,8 @@ ROUTE_MAP = {
     "sleep_analysis_api": ("/sleep-analysis", ["Sleep Analysis"]),
     "nutrition_tracking_api": ("/nutrition-tracking", ["Nutrition Tracking"]),
     "activity_recognition_api": ("/activity", ["Activity Recognition"]),
+    "adaptive_workouts_api": ("/workouts/adaptive", ["Adaptive Workouts"]),
+    "i18n_api": ("/i18n", ["Internationalization"]),
     "camera_vitals": ("/camera", ["Camera Vitals"]),
     "stress_management": ("/stress", ["Stress Management"]),
     "digital_wellbeing_api": ("/wellbeing", ["Digital Wellbeing"]),
