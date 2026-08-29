@@ -21,7 +21,8 @@ import json
 import hmac
 
 
-_env_key = os.getenv("JWT_SECRET_KEY", "")
+from app.core.config import settings as _settings
+_env_key = os.getenv("JWT_SECRET_KEY", "") or _settings.JWT_SECRET_KEY
 if not _env_key:
     if os.getenv("ENVIRONMENT", "development") == "production":
         raise ValueError(
@@ -46,12 +47,13 @@ MAX_AUDIT_LOG_SIZE = 5000
 _audit_log: list[dict] = []
 
 
-def _log_audit_event(event_type: str, user_id: str = "", details: dict = None, ip: str = ""):
+def _log_audit_event(event_type: str, user_id: str = "", details: dict = None, ip: str = "", email: str = ""):
     """Record a security audit event."""
     import time as _time
     _audit_log.append({
         "event": event_type,
         "user_id": user_id,
+        "email": email,
         "details": details or {},
         "ip": ip,
         "timestamp": _time.time(),
