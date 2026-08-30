@@ -1,330 +1,304 @@
 """
-HRV Biofeedback Training Service
-Inspired by OpenHRV - real-time HRV display, breathing pacer, Polar sensor integration
-
-Pure functions for HRV biofeedback training sessions:
-- Breathing pacer generation (coherent breathing at 0.1 Hz)
-- Real-time HRV metrics calculation (RMSSD, SDNN, LF/HF ratio)
-- Session analytics and progress tracking
-- Polar H7/H9/H10 sensor data processing
+HRV Biofeedback Service — Inspired by OpenHRV
+Real-time HRV biofeedback training with guided breathing and coherence scoring
 """
 
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
 import math
 import time
+from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass, field
+from enum import Enum
+
+
+class BreathingPhase(Enum):
+    INHALE = "inhale"
+    EXHALE = "exhale"
+    HOLD = "hold"
+
+
+class CoherenceLevel(Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
 
 
 @dataclass
-class BreathingPacer:
-    """Breathing pacer configuration for coherent breathing"""
-    inhale_duration: float  # seconds
-    hold_duration: float    # seconds (optional)
-    exhale_duration: float  # seconds
-    cycle_duration: float   # total cycle duration
-    frequency: float        # Hz (0.1 Hz = 6 breaths/min for coherence)
+class BreathingPattern:
+    name: str
+    inhale_seconds: float
+    exhale_seconds: float
+    hold_in_seconds: float = 0.0
+    hold_out_seconds: float = 0.0
+    description: str = ""
+
+    @property
+    def cycle_length(self) -> float:
+        return (self.inhale_seconds + self.exhale_seconds +
+                self.hold_in_seconds + self.hold_out_seconds)
+
+    @property
+    def breaths_per_minute(self) -> float:
+        if self.cycle_length > 0:
+            return 60.0 / self.cycle_length
+        return 0.0
 
 
 @dataclass
 class HRVSample:
-    """Single HRV measurement sample"""
     timestamp: float
-    rr_interval: float      # ms (R-R interval from ECG)
-    heart_rate: float       # bpm
-    quality: float          # 0-1 signal quality
+    rr_interval_ms: float
+    heart_rate: float
 
 
 @dataclass
-class HRVMetrics:
-    """Calculated HRV metrics"""
-    rmssd: float            # Root mean square of successive differences (ms)
-    sdnn: float             # Standard deviation of NN intervals (ms)
-    lf_power: float         # Low frequency power (ms²)
-    hf_power: float         # High frequency power (ms²)
-    lf_hf_ratio: float      # LF/HF ratio
-    hr: float               # Average heart rate (bpm)
-    rr_mean: float          # Mean R-R interval (ms)
-    sample_count: int       # Number of samples used
+class CoherenceResult:
+    score: float
+    level: CoherenceLevel
+    lf_power: float
+    hf_power: float
+    lf_hf_ratio: float
+    rmssd: float
+    breathing_rate: float
 
 
 @dataclass
 class BiofeedbackSession:
-    """HRV biofeedback training session"""
     session_id: str
     start_time: float
-    duration: float         # seconds
-    target_coherence: float # target coherence score (0-1)
-    actual_coherence: float # achieved coherence score
-    pacer: BreathingPacer
-    samples: List[HRVSample]
-    metrics: HRVMetrics
-    progress_score: float   # 0-100 progress toward mastery
+    pattern: BreathingPattern
+    samples: List[HRVSample] = field(default_factory=list)
+    coherence_scores: List[CoherenceResult] = field(default_factory=list)
+    end_time: Optional[float] = None
 
 
-def create_coherent_pacer(target_frequency: float = 0.1) -> BreathingPacer:
-    """
-    Create a breathing pacer for coherent breathing
-    
-    Coherent breathing at 0.1 Hz (6 breaths/min) maximizes HRV
-    and promotes parasympathetic nervous system activation.
-    
-    Args:
-        target_frequency: Target breathing frequency in Hz (default 0.1 Hz)
-    
-    Returns:
-        BreathingPacer configuration
-    """
-    cycle_duration = 1.0 / target_frequency
-    
-    # Standard coherent breathing: 4s inhale, 4s exhale, 2s hold
-    inhale_duration = cycle_duration * 0.4
-    hold_duration = cycle_duration * 0.2
-    exhale_duration = cycle_duration * 0.4
-    
-    return BreathingPacer(
-        inhale_duration=inhale_duration,
-        hold_duration=hold_duration,
-        exhale_duration=exhale_duration,
-        cycle_duration=cycle_duration,
-        frequency=target_frequency
-    )
+class HRVBiofeedbackAnalyzer:
+    """Pure function analyzer for HRV biofeedback training."""
 
+    # Standard breathing patterns
+    PATTERNS = {
+        "calm": BreathingPattern(
+            name="calm",
+            inhale_seconds=4.0,
+            exhale_seconds=6.0,
+            description="Relaxing 6 BPM pattern"
+        ),
+        "coherence": BreathingPattern(
+            name="coherence",
+            inhale_seconds=5.0,
+            exhale_seconds=5.0,
+            description="5.5 BPM coherence breathing"
+        ),
+        "energize": BreathingPattern(
+            name="energize",
+            inhale_seconds=3.0,
+            exhale_seconds=3.0,
+            description="10 BPM energizing pattern"
+        ),
+        "sleep": BreathingPattern(
+            name="sleep",
+            inhale_seconds=4.0,
+            exhale_seconds=7.0,
+            hold_in_seconds=1.0,
+            description="4-7-8 sleep pattern"
+        ),
+        "box": BreathingPattern(
+            name="box",
+            inhale_seconds=4.0,
+            exhale_seconds=4.0,
+            hold_in_seconds=4.0,
+            hold_out_seconds=4.0,
+            description="Box breathing for focus"
+        ),
+    }
 
-def calculate_hrv_metrics(samples: List[HRVSample], window_size: int = 30) -> HRVMetrics:
-    """
-    Calculate HRV metrics from RR interval samples
-    
-    Args:
-        samples: List of HRV samples with RR intervals
-        window_size: Window size in seconds for metrics calculation
-    
-    Returns:
-        HRVMetrics with calculated values
-    """
-    if len(samples) < 2:
-        return HRVMetrics(
-            rmssd=0.0, sdnn=0.0, lf_power=0.0, hf_power=0.0,
-            lf_hf_ratio=0.0, hr=0.0, rr_mean=0.0, sample_count=0
-        )
-    
-    # Extract RR intervals (in ms)
-    rr_intervals = [s.rr_interval for s in samples]
-    
-    # Calculate RMSSD (Root Mean Square of Successive Differences)
-    successive_diffs = [rr_intervals[i+1] - rr_intervals[i] for i in range(len(rr_intervals)-1)]
-    rmssd = math.sqrt(sum(d**2 for d in successive_diffs) / len(successive_diffs))
-    
-    # Calculate SDNN (Standard Deviation of NN intervals)
-    rr_mean = sum(rr_intervals) / len(rr_intervals)
-    sdnn = math.sqrt(sum((rr - rr_mean)**2 for rr in rr_intervals) / len(rr_intervals))
-    
-    # Calculate frequency domain metrics (simplified)
-    # LF: 0.04-0.15 Hz, HF: 0.15-0.4 Hz
-    lf_power = calculate_lf_power(rr_intervals)
-    hf_power = calculate_hf_power(rr_intervals)
-    lf_hf_ratio = lf_power / hf_power if hf_power > 0 else 0.0
-    
-    # Average heart rate
-    hr = sum(s.heart_rate for s in samples) / len(samples)
-    
-    return HRVMetrics(
-        rmssd=rmssd,
-        sdnn=sdnn,
-        lf_power=lf_power,
-        hf_power=hf_power,
-        lf_hf_ratio=lf_hf_ratio,
-        hr=hr,
-        rr_mean=rr_mean,
-        sample_count=len(samples)
-    )
+    @staticmethod
+    def calculate_rmssd(rr_intervals_ms: List[float]) -> float:
+        if len(rr_intervals_ms) < 2:
+            return 0.0
+        squared_diffs = []
+        for i in range(1, len(rr_intervals_ms)):
+            diff = rr_intervals_ms[i] - rr_intervals_ms[i - 1]
+            squared_diffs.append(diff ** 2)
+        mean_squared = sum(squared_diffs) / len(squared_diffs)
+        return math.sqrt(mean_squared)
 
+    @staticmethod
+    def calculate_sdnn(rr_intervals_ms: List[float]) -> float:
+        if len(rr_intervals_ms) < 2:
+            return 0.0
+        mean_rr = sum(rr_intervals_ms) / len(rr_intervals_ms)
+        squared_diffs = [(rr - mean_rr) ** 2 for rr in rr_intervals_ms]
+        return math.sqrt(sum(squared_diffs) / len(squared_diffs))
 
-def calculate_coherence_score(metrics: HRVMetrics, window_size: int = 30) -> float:
-    """
-    Calculate coherence score (0-1) based on HRV metrics
-    
-    High coherence indicates:
-    - Stable breathing at ~0.1 Hz
-    - High LF power (respiratory sinus arrhythmia)
-    - Low HF power (reduced parasympathetic tone)
-    - RMSSD > 20ms (healthy vagal tone)
-    
-    Args:
-        metrics: Calculated HRV metrics
-        window_size: Window size for coherence calculation
-    
-    Returns:
-        Coherence score between 0 and 1
-    """
-    # RMSSD score (0-1, optimal > 30ms)
-    rmssd_score = min(metrics.rmssd / 30.0, 1.0)
-    
-    # LF/HF ratio score (0-1, optimal 1.5-2.5)
-    if metrics.lf_hf_ratio >= 1.5 and metrics.lf_hf_ratio <= 2.5:
-        lf_hf_score = 1.0
-    elif metrics.lf_hf_ratio < 1.5:
-        lf_hf_score = metrics.lf_hf_ratio / 1.5
-    else:
-        lf_hf_score = 2.5 / metrics.lf_hf_ratio
-    
-    # HR stability score (0-1, optimal 60-80 bpm)
-    if metrics.hr >= 60 and metrics.hr <= 80:
-        hr_score = 1.0
-    elif metrics.hr < 60:
-        hr_score = metrics.hr / 60.0
-    else:
-        hr_score = 80.0 / metrics.hr
-    
-    # Weighted combination
-    coherence = (rmssd_score * 0.4 + lf_hf_score * 0.3 + hr_score * 0.3)
-    
-    return min(max(coherence, 0.0), 1.0)
+    @staticmethod
+    def calculate_lf_hf_ratio(rr_intervals_ms: List[float], sampling_rate: float = 4.0) -> Tuple[float, float, float]:
+        if len(rr_intervals_ms) < 8:
+            return 0.0, 0.0, 0.0
+        n = len(rr_intervals_ms)
+        mean_rr = sum(rr_intervals_ms) / n
+        detrended = [rr - mean_rr for rr in rr_intervals_ms]
+        low_freq_power = 0.0
+        high_freq_power = 0.0
+        for i in range(n):
+            freq = (i * sampling_rate) / n
+            re = sum(detrended[j] * math.cos(2 * math.pi * freq * j / sampling_rate)
+                     for j in range(n))
+            im = sum(detrended[j] * math.sin(2 * math.pi * freq * j / sampling_rate)
+                     for j in range(n))
+            power = (re ** 2 + im ** 2) / n
+            if 0.04 <= freq <= 0.15:
+                low_freq_power += power
+            elif 0.15 < freq <= 0.4:
+                high_freq_power += power
+        hf = max(high_freq_power, 0.001)
+        lf_hf = low_freq_power / hf
+        return low_freq_power, high_freq_power, lf_hf
 
+    @staticmethod
+    def estimate_breathing_rate(rr_intervals_ms: List[float], window_seconds: float = 60.0) -> float:
+        if len(rr_intervals_ms) < 4:
+            return 0.0
+        total_time = sum(rr_intervals_ms) / 1000.0
+        if total_time <= 0:
+            return 0.0
+        mean_rr = sum(rr_intervals_ms) / len(rr_intervals_ms)
+        crossings = 0
+        for i in range(1, len(rr_intervals_ms)):
+            if ((rr_intervals_ms[i] > mean_rr) != (rr_intervals_ms[i - 1] > mean_rr)):
+                crossings += 1
+        breathing_cycles = crossings / 2.0
+        duration = total_time
+        return (breathing_cycles / duration) * 60.0
 
-def process_polar_data(raw_data: dict) -> Optional[HRVSample]:
-    """
-    Process raw data from Polar H7/H9/H10 chest strap
-    
-    Args:
-        raw_data: Raw sensor data dictionary
-    
-    Returns:
-        HRVSample if valid, None otherwise
-    """
-    try:
-        # Extract timestamp
-        timestamp = raw_data.get('timestamp', time.time())
-        
-        # Extract RR interval (in ms)
-        rr_interval = raw_data.get('rr_interval')
-        if rr_interval is None or rr_interval <= 0:
-            return None
-        
-        # Extract heart rate
-        heart_rate = raw_data.get('heart_rate')
-        if heart_rate is None or heart_rate <= 0:
-            # Calculate from RR interval
-            heart_rate = 60000.0 / rr_interval  # Convert ms to bpm
-        
-        # Calculate signal quality
-        quality = raw_data.get('quality', 0.8)  # Default to 0.8 if not provided
-        
-        return HRVSample(
-            timestamp=timestamp,
-            rr_interval=rr_interval,
-            heart_rate=heart_rate,
-            quality=quality
-        )
-    except Exception as e:
-        print(f"[HRV Biofeedback] Error processing polar data: {e}")
-        return None
-
-
-def calculate_session_progress(sessions: List[BiofeedbackSession]) -> float:
-    """
-    Calculate overall progress score across multiple sessions
-    
-    Args:
-        sessions: List of completed biofeedback sessions
-    
-    Returns:
-        Progress score 0-100
-    """
-    if not sessions:
-        return 0.0
-    
-    # Calculate average coherence across sessions
-    avg_coherence = sum(s.actual_coherence for s in sessions) / len(sessions)
-    
-    # Calculate improvement trend
-    if len(sessions) >= 2:
-        first_half = sessions[:len(sessions)//2]
-        second_half = sessions[len(sessions)//2:]
-        
-        first_avg = sum(s.actual_coherence for s in first_half) / len(first_half)
-        second_avg = sum(s.actual_coherence for s in second_half) / len(second_half)
-        
-        improvement = second_avg - first_avg
-    else:
-        improvement = 0.0
-    
-    # Calculate consistency (standard deviation of coherence)
-    coherence_values = [s.actual_coherence for s in sessions]
-    mean_coherence = sum(coherence_values) / len(coherence_values)
-    variance = sum((c - mean_coherence)**2 for c in coherence_values) / len(coherence_values)
-    consistency = 1.0 / (1.0 + math.sqrt(variance))
-    
-    # Weighted progress score
-    progress = (avg_coherence * 60 + improvement * 30 + consistency * 10) * 100
-    
-    return min(max(progress, 0.0), 100.0)
-
-
-def generate_pacer_visualization(pacer: BreathingPacer, duration: float, sample_rate: float = 30.0) -> List[Tuple[float, float]]:
-    """
-    Generate breathing pacer visualization data
-    
-    Args:
-        pacer: Breathing pacer configuration
-        duration: Duration in seconds
-        sample_rate: Samples per second
-    
-    Returns:
-        List of (time, amplitude) tuples for visualization
-    """
-    visualization = []
-    num_samples = int(duration * sample_rate)
-    
-    for i in range(num_samples):
-        t = i / sample_rate
-        cycle_pos = t % pacer.cycle_duration
-        
-        # Determine phase (inhale, hold, exhale)
-        if cycle_pos < pacer.inhale_duration:
-            # Inhale phase (0 to 1)
-            amplitude = cycle_pos / pacer.inhale_duration
-        elif cycle_pos < pacer.inhale_duration + pacer.hold_duration:
-            # Hold phase (1)
-            amplitude = 1.0
+    @staticmethod
+    def score_coherence(rmssd: float, lf_hf_ratio: float, breathing_rate: float,
+                       target_bpm: float = 5.5) -> CoherenceResult:
+        rmssd_score = min(1.0, rmssd / 50.0)
+        lf_hf_score = 1.0 - min(1.0, abs(lf_hf_ratio - 1.5) / 3.0)
+        target_diff = abs(breathing_rate - target_bpm)
+        breath_score = max(0.0, 1.0 - target_diff / 5.0)
+        coherence_score = (rmssd_score * 0.4 + lf_hf_score * 0.3 + breath_score * 0.3)
+        coherence_score = max(0.0, min(1.0, coherence_score))
+        if coherence_score >= 0.7:
+            level = CoherenceLevel.HIGH
+        elif coherence_score >= 0.4:
+            level = CoherenceLevel.MEDIUM
         else:
-            # Exhale phase (1 to 0)
-            exhale_pos = cycle_pos - pacer.inhale_duration - pacer.hold_duration
-            amplitude = 1.0 - (exhale_pos / pacer.exhale_duration)
-        
-        visualization.append((t, amplitude))
-    
-    return visualization
+            level = CoherenceLevel.LOW
+        return CoherenceResult(
+            score=coherence_score,
+            level=level,
+            lf_power=lf_hf_ratio * 100,
+            hf_power=100.0,
+            lf_hf_ratio=lf_hf_ratio,
+            rmssd=rmssd,
+            breathing_rate=breathing_rate
+        )
 
+    @classmethod
+    def analyze_breathing_session(cls, samples: List[HRVSample],
+                                  pattern: BreathingPattern) -> Dict:
+        if not samples:
+            return {"error": "No samples provided"}
+        rr_intervals = [s.rr_interval_ms for s in samples]
+        rmssd = cls.calculate_rmssd(rr_intervals)
+        sdnn = cls.calculate_sdnn(rr_intervals)
+        lf, hf, lf_hf = cls.calculate_lf_hf_ratio(rr_intervals)
+        breathing_rate = cls.estimate_breathing_rate(rr_intervals)
+        coherence = cls.score_coherence(rmssd, lf_hf, breathing_rate, pattern.breaths_per_minute)
+        total_time = (samples[-1].timestamp - samples[0].timestamp) / 1000.0
+        hr_values = [s.heart_rate for s in samples]
+        avg_hr = sum(hr_values) / len(hr_values)
+        min_hr = min(hr_values)
+        max_hr = max(hr_values)
+        coherence_scores = [c.score for c in [coherence]]
+        avg_coherence = sum(coherence_scores) / len(coherence_scores) if coherence_scores else 0.0
+        return {
+            "duration_seconds": total_time,
+            "sample_count": len(samples),
+            "rmssd": round(rmssd, 2),
+            "sdnn": round(sdnn, 2),
+            "lf_power": round(lf, 2),
+            "hf_power": round(hf, 2),
+            "lf_hf_ratio": round(lf_hf, 2),
+            "breathing_rate_bpm": round(breathing_rate, 1),
+            "coherence_score": round(coherence.score, 3),
+            "coherence_level": coherence.level.value,
+            "heart_rate": {
+                "average": round(avg_hr, 1),
+                "min": round(min_hr, 1),
+                "max": round(max_hr, 1)
+            },
+            "pattern": pattern.name,
+            "target_bpm": pattern.breaths_per_minute
+        }
 
-# Helper functions for frequency domain analysis
-def calculate_lf_power(rr_intervals: List[float]) -> float:
-    """Calculate low frequency power (0.04-0.15 Hz)"""
-    # Simplified LF power calculation
-    # In production, use FFT or autoregressive methods
-    if len(rr_intervals) < 10:
-        return 0.0
-    
-    # Calculate successive differences
-    diffs = [rr_intervals[i+1] - rr_intervals[i] for i in range(len(rr_intervals)-1)]
-    
-    # Simple variance-based approximation
-    mean_diff = sum(diffs) / len(diffs)
-    variance = sum((d - mean_diff)**2 for d in diffs) / len(diffs)
-    
-    return variance * 0.5  # Simplified scaling
+    @classmethod
+    def get_recommended_pattern(cls, stress_level: float, goal: str = "relax") -> BreathingPattern:
+        if goal == "sleep":
+            return cls.PATTERNS["sleep"]
+        elif goal == "focus":
+            return cls.PATTERNS["box"]
+        elif goal == "energize":
+            return cls.PATTERNS["energize"]
+        elif stress_level > 0.7:
+            return cls.PATTERNS["calm"]
+        elif stress_level > 0.4:
+            return cls.PATTERNS["coherence"]
+        else:
+            return cls.PATTERNS["energize"]
 
+    @staticmethod
+    def calculate_coherence_trend(scores: List[float], window: int = 5) -> Dict:
+        if len(scores) < 2:
+            return {"trend": "insufficient_data", "slope": 0.0}
+        if len(scores) < window:
+            window = max(2, len(scores))
+        recent = scores[-window:]
+        older = scores[:window] if len(scores) > window else scores[:1]
+        recent_avg = sum(recent) / len(recent)
+        older_avg = sum(older) / len(older)
+        x_vals = list(range(len(recent)))
+        x_mean = sum(x_vals) / len(x_vals)
+        y_mean = sum(recent) / len(recent)
+        numerator = sum((x - x_mean) * (y - y_mean) for x, y in zip(x_vals, recent))
+        denominator = sum((x - x_mean) ** 2 for x in x_vals)
+        slope = numerator / denominator if denominator > 0 else 0.0
+        if slope > 0.01:
+            trend = "improving"
+        elif slope < -0.01:
+            trend = "declining"
+        else:
+            trend = "stable"
+        return {
+            "trend": trend,
+            "slope": round(slope, 4),
+            "recent_average": round(recent_avg, 3),
+            "older_average": round(older_avg, 3),
+            "change": round(recent_avg - older_avg, 3)
+        }
 
-def calculate_hf_power(rr_intervals: List[float]) -> float:
-    """Calculate high frequency power (0.15-0.4 Hz)"""
-    # Simplified HF power calculation
-    if len(rr_intervals) < 10:
-        return 0.0
-    
-    # Calculate successive differences
-    diffs = [rr_intervals[i+1] - rr_intervals[i] for i in range(len(rr_intervals)-1)]
-    
-    # Simple variance-based approximation
-    mean_diff = sum(diffs) / len(diffs)
-    variance = sum((d - mean_diff)**2 for d in diffs) / len(diffs)
-    
-    return variance * 0.3  # Simplified scaling
+    @staticmethod
+    def generate_session_summary(session: BiofeedbackSession) -> Dict:
+        if not session.samples:
+            return {"error": "Empty session"}
+        durations = []
+        for i in range(1, len(session.samples)):
+            durations.append(session.samples[i].timestamp - session.samples[i - 1].timestamp)
+        avg_ibi = sum(durations) / len(durations) if durations else 0
+        coherence_scores = [c.score for c in session.coherence_scores]
+        avg_coherence = sum(coherence_scores) / len(coherence_scores) if coherence_scores else 0.0
+        high_coherence_pct = (
+            sum(1 for s in coherence_scores if s >= 0.7) / len(coherence_scores) * 100
+            if coherence_scores else 0.0
+        )
+        return {
+            "session_id": session.session_id,
+            "pattern": session.pattern.name,
+            "duration_seconds": (session.end_time or time.time()) - session.start_time,
+            "sample_count": len(session.samples),
+            "average_inter_beat_interval_ms": round(avg_ibi, 2),
+            "average_coherence": round(avg_coherence, 3),
+            "high_coherence_percentage": round(high_coherence_pct, 1),
+            "coherence_trend": HRVBiofeedbackAnalyzer.calculate_coherence_trend(coherence_scores)
+        }

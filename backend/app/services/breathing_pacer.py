@@ -1,384 +1,277 @@
 """
-Advanced Breathing Pacer
-Extracted from OpenHRV's sinusoidal breathing pattern algorithm
-
-Provides multiple breathing patterns:
-- Coherent breathing (0.1 Hz)
-- Box breathing (4-4-4-4)
-- 4-7-8 relaxation
-- Custom patterns
-
-Pure functions for generating breathing animations and pacer data.
+Breathing Pacer Service — Inspired by OpenHRV
+Visual breathing guide with multiple patterns and real-time feedback
 """
 
-from dataclasses import dataclass
-from typing import List, Tuple, Optional
 import math
 import time
+from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass
+from enum import Enum
+
+
+class PacerStyle(Enum):
+    CIRCLE = "circle"
+    BAR = "bar"
+    BOX = "box"
+    WAVE = "wave"
 
 
 @dataclass
-class BreathingPattern:
-    """Configuration for a breathing pattern"""
-    name: str
-    inhale: float      # seconds
-    hold_in: float     # seconds
-    exhale: float      # seconds
-    hold_out: float    # seconds
-    description: str
+class PacerConfig:
+    style: PacerStyle
+    pattern_name: str
+    inhale_seconds: float
+    exhale_seconds: float
+    hold_in_seconds: float = 0.0
+    hold_out_seconds: float = 0.0
+    color: str = "#4CAF50"
+    bg_color: str = "#1a1a2e"
+    size: int = 200
+
+    @property
+    def cycle_length(self) -> float:
+        return (self.inhale_seconds + self.exhale_seconds +
+                self.hold_in_seconds + self.hold_out_seconds)
+
+    @property
+    def breaths_per_minute(self) -> float:
+        if self.cycle_length > 0:
+            return 60.0 / self.cycle_length
+        return 0.0
 
 
-# Pre-defined breathing patterns
-PATTERNS = {
-    'coherent': BreathingPattern(
-        name='coherent',
-        inhale=4.0,
-        hold_in=0.0,
-        exhale=4.0,
-        hold_out=0.0,
-        description='Coherent breathing at 0.1 Hz (6 breaths/min)'
-    ),
-    'box': BreathingPattern(
-        name='box',
-        inhale=4.0,
-        hold_in=4.0,
-        exhale=4.0,
-        hold_out=4.0,
-        description='Box breathing (4-4-4-4)'
-    ),
-    'relaxation': BreathingPattern(
-        name='relaxation',
-        inhale=4.0,
-        hold_in=7.0,
-        exhale=8.0,
-        hold_out=0.0,
-        description='4-7-8 relaxation breathing'
-    ),
-    'energizing': BreathingPattern(
-        name='energizing',
-        inhale=2.0,
-        hold_in=0.0,
-        exhale=2.0,
-        hold_out=0.0,
-        description='Fast energizing breathing (15 breaths/min)'
-    ),
-    'sleep': BreathingPattern(
-        name='sleep',
-        inhale=6.0,
-        hold_in=2.0,
-        exhale=8.0,
-        hold_out=2.0,
-        description='Slow sleep preparation breathing'
-    )
-}
+@dataclass
+class PacerState:
+    phase: str
+    progress: float
+    scale: float
+    opacity: float
+    time_in_phase: float
+    total_cycle_time: float
 
 
-def get_pattern(name: str) -> BreathingPattern:
-    """
-    Get a breathing pattern by name
-    
-    Args:
-        name: Pattern name (coherent, box, relaxation, energizing, sleep)
-    
-    Returns:
-        BreathingPattern configuration
-    """
-    if name not in PATTERNS:
-        raise ValueError(f"Unknown pattern: {name}. Available: {list(PATTERNS.keys())}")
-    return PATTERNS[name]
+class BreathingPacer:
+    """Pure function breathing pacer with visual feedback generation."""
 
-
-def calculate_cycle_duration(pattern: BreathingPattern) -> float:
-    """
-    Calculate total cycle duration for a pattern
-    
-    Args:
-        pattern: Breathing pattern
-    
-    Returns:
-        Total cycle duration in seconds
-    """
-    return pattern.inhale + pattern.hold_in + pattern.exhale + pattern.hold_out
-
-
-def calculate_breaths_per_minute(pattern: BreathingPattern) -> float:
-    """
-    Calculate breathing rate in breaths per minute
-    
-    Args:
-        pattern: Breathing pattern
-    
-    Returns:
-        Breaths per minute
-    """
-    cycle_duration = calculate_cycle_duration(pattern)
-    return 60.0 / cycle_duration if cycle_duration > 0 else 0
-
-
-def generate_breathing_curve(
-    pattern: BreathingPattern,
-    duration: float,
-    sample_rate: float = 30.0
-) -> List[Tuple[float, float]]:
-    """
-    Generate a breathing curve using OpenHRV's sinusoidal approach
-    
-    The curve is generated using a sinusoidal function that smoothly
-    transitions between inhale and exhale phases, matching OpenHRV's
-    pacer implementation.
-    
-    Args:
-        pattern: Breathing pattern
-        duration: Duration in seconds
-        sample_rate: Samples per second
-    
-    Returns:
-        List of (time, amplitude) tuples where amplitude is 0-1
-    """
-    samples = []
-    num_samples = int(duration * sample_rate)
-    cycle_duration = calculate_cycle_duration(pattern)
-    
-    if cycle_duration <= 0:
-        return samples
-    
-    for i in range(num_samples):
-        t = i / sample_rate
-        
-        # Calculate position within cycle
-        cycle_pos = t % cycle_duration
-        
-        # Determine phase and calculate amplitude
-        if cycle_pos < pattern.inhale:
-            # Inhale phase: 0 -> 1
-            phase_progress = cycle_pos / pattern.inhale
-            amplitude = math.sin(phase_progress * math.pi / 2)  # Sinusoidal ease
-            
-        elif cycle_pos < pattern.inhale + pattern.hold_in:
-            # Hold in phase: 1
-            amplitude = 1.0
-            
-        elif cycle_pos < pattern.inhale + pattern.hold_in + pattern.exhale:
-            # Exhale phase: 1 -> 0
-            exhale_pos = cycle_pos - pattern.inhale - pattern.hold_in
-            phase_progress = exhale_pos / pattern.exhale
-            amplitude = math.cos(phase_progress * math.pi / 2)  # Sinusoidal ease
-            
-        else:
-            # Hold out phase: 0
-            amplitude = 0.0
-        
-        samples.append((t, amplitude))
-    
-    return samples
-
-
-def generate_pacer_visualization(
-    pattern: BreathingPattern,
-    duration: float,
-    sample_rate: float = 60.0,
-    visualization_type: str = 'circle'
-) -> List[dict]:
-    """
-    Generate pacer visualization data
-    
-    Args:
-        pattern: Breathing pattern
-        duration: Duration in seconds
-        sample_rate: Samples per second
-        visualization_type: 'circle' or 'wave'
-    
-    Returns:
-        List of visualization data points
-    """
-    samples = []
-    num_samples = int(duration * sample_rate)
-    cycle_duration = calculate_cycle_duration(pattern)
-    
-    for i in range(num_samples):
-        t = i / sample_rate
-        cycle_pos = t % cycle_duration
-        
-        # Get amplitude using OpenHRV's sinusoidal method
-        if cycle_pos < pattern.inhale:
-            phase_progress = cycle_pos / pattern.inhale
-            amplitude = math.sin(phase_progress * math.pi / 2)
-        elif cycle_pos < pattern.inhale + pattern.hold_in:
-            amplitude = 1.0
-        elif cycle_pos < pattern.inhale + pattern.hold_in + pattern.exhale:
-            exhale_pos = cycle_pos - pattern.inhale - pattern.hold_in
-            phase_progress = exhale_pos / pattern.exhale
-            amplitude = math.cos(phase_progress * math.pi / 2)
-        else:
-            amplitude = 0.0
-        
-        if visualization_type == 'circle':
-            # Circle visualization (like OpenHRV)
-            angle = 2 * math.pi * (cycle_pos / cycle_duration)
-            radius = 0.5 + 0.5 * amplitude
-            
-            samples.append({
-                'time': t,
-                'amplitude': amplitude,
-                'x': radius * math.cos(angle),
-                'y': radius * math.sin(angle),
-                'radius': radius
-            })
-        else:
-            # Wave visualization
-            samples.append({
-                'time': t,
-                'amplitude': amplitude,
-                'x': t,
-                'y': amplitude
-            })
-    
-    return samples
-
-
-def calculate_adaptive_pace(
-    current_hr: float,
-    target_hr: float,
-    current_pattern: BreathingPattern,
-    adjustment_rate: float = 0.1
-) -> BreathingPattern:
-    """
-    Calculate adaptive breathing pace based on heart rate
-    
-    Adjusts breathing rate to help reach target heart rate.
-    Slower breathing generally lowers heart rate.
-    
-    Args:
-        current_hr: Current heart rate (bpm)
-        target_hr: Target heart rate (bpm)
-        current_pattern: Current breathing pattern
-        adjustment_rate: How aggressively to adjust (0-1)
-    
-    Returns:
-        Adjusted BreathingPattern
-    """
-    # Calculate target breathing rate
-    # Slower breathing = lower heart rate
-    hr_diff = current_hr - target_hr
-    
-    if hr_diff > 0:
-        # Need to slow down breathing
-        target_bpm = calculate_breaths_per_minute(current_pattern) * (1 - adjustment_rate)
-    elif hr_diff < 0:
-        # Need to speed up breathing
-        target_bpm = calculate_breaths_per_minute(current_pattern) * (1 + adjustment_rate)
-    else:
-        # At target
-        return current_pattern
-    
-    # Clamp to reasonable range (4-20 breaths/min)
-    target_bpm = max(4.0, min(20.0, target_bpm))
-    
-    # Calculate new cycle duration
-    new_cycle_duration = 60.0 / target_bpm
-    
-    # Scale pattern phases proportionally
-    old_cycle = calculate_cycle_duration(current_pattern)
-    scale_factor = new_cycle_duration / old_cycle if old_cycle > 0 else 1.0
-    
-    return BreathingPattern(
-        name=f"adaptive_{current_pattern.name}",
-        inhale=current_pattern.inhale * scale_factor,
-        hold_in=current_pattern.hold_in * scale_factor,
-        exhale=current_pattern.exhale * scale_factor,
-        hold_out=current_pattern.hold_out * scale_factor,
-        description=f"Adaptive {current_pattern.description}"
-    )
-
-
-def get_realtime_pacer_state(pattern: BreathingPattern) -> dict:
-    """
-    Get current pacer state based on real time
-    
-    This is the core function used for real-time pacer display,
-    matching OpenHRV's approach of using actual time rather than
-    pre-computed sequences.
-    
-    Args:
-        pattern: Breathing pattern
-    
-    Returns:
-        Dictionary with current state information
-    """
-    cycle_duration = calculate_cycle_duration(pattern)
-    current_time = time.time()
-    cycle_pos = current_time % cycle_duration
-    
-    # Calculate phase and amplitude
-    if cycle_pos < pattern.inhale:
-        phase = 'inhale'
-        phase_progress = cycle_pos / pattern.inhale
-        amplitude = math.sin(phase_progress * math.pi / 2)
-        
-    elif cycle_pos < pattern.inhale + pattern.hold_in:
-        phase = 'hold_in'
-        phase_progress = (cycle_pos - pattern.inhale) / pattern.hold_in if pattern.hold_in > 0 else 1
-        amplitude = 1.0
-        
-    elif cycle_pos < pattern.inhale + pattern.hold_in + pattern.exhale:
-        phase = 'exhale'
-        exhale_pos = cycle_pos - pattern.inhale - pattern.hold_in
-        phase_progress = exhale_pos / pattern.exhale
-        amplitude = math.cos(phase_progress * math.pi / 2)
-        
-    else:
-        phase = 'hold_out'
-        hold_out_pos = cycle_pos - pattern.inhale - pattern.hold_in - pattern.exhale
-        phase_progress = hold_out_pos / pattern.hold_out if pattern.hold_out > 0 else 1
-        amplitude = 0.0
-    
-    return {
-        'phase': phase,
-        'amplitude': amplitude,
-        'phase_progress': phase_progress,
-        'cycle_position': cycle_pos,
-        'cycle_duration': cycle_duration,
-        'breaths_per_minute': calculate_breaths_per_minute(pattern),
-        'timestamp': current_time
+    PRESETS = {
+        "4-7-8": PacerConfig(
+            style=PacerStyle.CIRCLE,
+            pattern_name="4-7-8",
+            inhale_seconds=4.0,
+            exhale_seconds=8.0,
+            hold_in_seconds=7.0,
+            color="#6C63FF"
+        ),
+        "box": PacerConfig(
+            style=PacerStyle.BOX,
+            pattern_name="box",
+            inhale_seconds=4.0,
+            exhale_seconds=4.0,
+            hold_in_seconds=4.0,
+            hold_out_seconds=4.0,
+            color="#FF6B6B"
+        ),
+        "calm": PacerConfig(
+            style=PacerStyle.CIRCLE,
+            pattern_name="calm",
+            inhale_seconds=4.0,
+            exhale_seconds=6.0,
+            color="#4ECDC4"
+        ),
+        "energize": PacerConfig(
+            style=PacerStyle.BAR,
+            pattern_name="energize",
+            inhale_seconds=2.0,
+            exhale_seconds=2.0,
+            color="#FFE66D"
+        ),
+        "sleep": PacerConfig(
+            style=PacerStyle.WAVE,
+            pattern_name="sleep",
+            inhale_seconds=4.0,
+            exhale_seconds=7.0,
+            hold_in_seconds=1.0,
+            color="#95E1D3"
+        ),
     }
 
+    @staticmethod
+    def get_phase_at_time(elapsed_seconds: float, config: PacerConfig) -> PacerState:
+        cycle_pos = elapsed_seconds % config.cycle_length if config.cycle_length > 0 else 0
+        phases = []
+        current_time = 0.0
+        if config.inhale_seconds > 0:
+            phases.append(("inhale", config.inhale_seconds, current_time))
+            current_time += config.inhale_seconds
+        if config.hold_in_seconds > 0:
+            phases.append(("hold_in", config.hold_in_seconds, current_time))
+            current_time += config.hold_in_seconds
+        if config.exhale_seconds > 0:
+            phases.append(("exhale", config.exhale_seconds, current_time))
+            current_time += config.exhale_seconds
+        if config.hold_out_seconds > 0:
+            phases.append(("hold_out", config.hold_out_seconds, current_time))
+            current_time += config.hold_out_seconds
+        if not phases:
+            return PacerState("idle", 0.0, 0.5, 1.0, 0.0, 0.0)
+        active_phase = phases[0]
+        for phase_name, duration, start_time in phases:
+            if cycle_pos < start_time + duration:
+                active_phase = (phase_name, duration, start_time)
+                break
+        phase_name, duration, start_time = active_phase
+        time_in_phase = cycle_pos - start_time
+        progress = time_in_phase / duration if duration > 0 else 0.0
+        if phase_name == "inhale":
+            scale = 0.5 + 0.5 * progress
+            opacity = 1.0
+        elif phase_name == "hold_in":
+            scale = 1.0
+            opacity = 0.9
+        elif phase_name == "exhale":
+            scale = 1.0 - 0.5 * progress
+            opacity = 0.7 + 0.3 * (1.0 - progress)
+        elif phase_name == "hold_out":
+            scale = 0.5
+            opacity = 0.6
+        else:
+            scale = 0.5
+            opacity = 1.0
+        return PacerState(
+            phase=phase_name,
+            progress=round(progress, 3),
+            scale=round(scale, 3),
+            opacity=round(opacity, 3),
+            time_in_phase=round(time_in_phase, 3),
+            total_cycle_time=round(config.cycle_length, 3)
+        )
 
-def validate_pattern(pattern: BreathingPattern) -> List[str]:
-    """
-    Validate a breathing pattern
-    
-    Args:
-        pattern: Breathing pattern to validate
-    
-    Returns:
-        List of validation errors (empty if valid)
-    """
-    errors = []
-    
-    if pattern.inhale <= 0:
-        errors.append("Inhale duration must be positive")
-    
-    if pattern.exhale <= 0:
-        errors.append("Exhale duration must be positive")
-    
-    if pattern.hold_in < 0:
-        errors.append("Hold in duration cannot be negative")
-    
-    if pattern.hold_out < 0:
-        errors.append("Hold out duration cannot be negative")
-    
-    total = calculate_cycle_duration(pattern)
-    if total < 2.0:
-        errors.append("Total cycle duration should be at least 2 seconds")
-    
-    if total > 30.0:
-        errors.append("Total cycle duration should not exceed 30 seconds")
-    
-    bpm = calculate_breaths_per_minute(pattern)
-    if bpm < 4.0:
-        errors.append("Breathing rate too slow (minimum 4 breaths/min)")
-    
-    if bpm > 20.0:
-        errors.append("Breathing rate too fast (maximum 20 breaths/min)")
-    
-    return errors
+    @staticmethod
+    def generate_circle_animation(state: PacerState, config: PacerConfig) -> Dict:
+        radius = (config.size / 2) * state.scale
+        return {
+            "type": "circle",
+            "cx": config.size / 2,
+            "cy": config.size / 2,
+            "radius": round(radius, 1),
+            "fill": config.color,
+            "opacity": state.opacity,
+            "phase": state.phase,
+            "progress": state.progress
+        }
+
+    @staticmethod
+    def generate_bar_animation(state: PacerState, config: PacerConfig) -> Dict:
+        bar_height = config.size * state.scale
+        return {
+            "type": "bar",
+            "x": config.size * 0.2,
+            "y": config.size - bar_height,
+            "width": config.size * 0.6,
+            "height": round(bar_height, 1),
+            "fill": config.color,
+            "opacity": state.opacity,
+            "phase": state.phase,
+            "progress": state.progress
+        }
+
+    @staticmethod
+    def generate_wave_animation(state: PacerState, config: PacerConfig) -> Dict:
+        points = []
+        for i in range(100):
+            x = (i / 99) * config.size
+            wave_progress = state.progress * math.pi * 2
+            amplitude = config.size * 0.2 * state.scale
+            y = config.size / 2 + amplitude * math.sin(wave_progress + (i / 99) * math.pi * 4)
+            points.append({"x": round(x, 1), "y": round(y, 1)})
+        return {
+            "type": "wave",
+            "points": points,
+            "stroke": config.color,
+            "stroke_width": 3,
+            "opacity": state.opacity,
+            "phase": state.phase,
+            "progress": state.progress
+        }
+
+    @staticmethod
+    def generate_box_animation(state: PacerState, config: PacerConfig) -> Dict:
+        size = config.size * state.scale
+        x = (config.size - size) / 2
+        return {
+            "type": "box",
+            "x": round(x, 1),
+            "y": round(x, 1),
+            "width": round(size, 1),
+            "height": round(size, 1),
+            "fill": "none",
+            "stroke": config.color,
+            "stroke_width": 3,
+            "opacity": state.opacity,
+            "phase": state.phase,
+            "progress": state.progress
+        }
+
+    @classmethod
+    def generate_frame(cls, elapsed_seconds: float, config: PacerConfig) -> Dict:
+        state = cls.get_phase_at_time(elapsed_seconds, config)
+        if config.style == PacerStyle.CIRCLE:
+            animation = cls.generate_circle_animation(state, config)
+        elif config.style == PacerStyle.BAR:
+            animation = cls.generate_bar_animation(state, config)
+        elif config.style == PacerStyle.BOX:
+            animation = cls.generate_box_animation(state, config)
+        elif config.style == PacerStyle.WAVE:
+            animation = cls.generate_wave_animation(state, config)
+        else:
+            animation = cls.generate_circle_animation(state, config)
+        return {
+            "animation": animation,
+            "phase": state.phase,
+            "progress": state.progress,
+            "scale": state.scale,
+            "breaths_per_minute": config.breaths_per_minute,
+            "cycle_time": config.cycle_length,
+            "time_in_phase": state.time_in_phase
+        }
+
+    @staticmethod
+    def calculate_session_stats(session_duration_seconds: float,
+                                config: PacerConfig) -> Dict:
+        if config.cycle_length <= 0:
+            return {"error": "Invalid pattern"}
+        total_breaths = session_duration_seconds / config.cycle_length
+        return {
+            "total_breaths": round(total_breaths, 1),
+            "average_bpm": round(config.breaths_per_minute, 1),
+            "cycle_length": round(config.cycle_length, 1),
+            "pattern": config.pattern_name,
+            "duration_seconds": session_duration_seconds,
+            "inhale_time": round(total_breaths * config.inhale_seconds, 1),
+            "exhale_time": round(total_breaths * config.exhale_seconds, 1),
+            "hold_time": round(total_breaths * (config.hold_in_seconds + config.hold_out_seconds), 1)
+        }
+
+    @classmethod
+    def get_adaptive_pattern(cls, current_hr: float, resting_hr: float,
+                             stress_level: float = 0.5) -> PacerConfig:
+        hr_ratio = current_hr / resting_hr if resting_hr > 0 else 1.0
+        if stress_level > 0.7 or hr_ratio > 1.3:
+            return cls.PRESETS["4-7-8"]
+        elif stress_level > 0.4 or hr_ratio > 1.1:
+            return cls.PRESETS["calm"]
+        elif hr_ratio < 0.9:
+            return cls.PRESETS["energize"]
+        else:
+            return cls.PRESETS["calm"]
+
+    @staticmethod
+    def generate_haptic_pattern(state: PacerState) -> Dict:
+        if state.phase == "inhale":
+            return {"type": "ramp_up", "duration_ms": int(state.time_in_phase * 1000)}
+        elif state.phase == "exhale":
+            return {"type": "ramp_down", "duration_ms": int(state.time_in_phase * 1000)}
+        elif state.phase in ("hold_in", "hold_out"):
+            return {"type": "steady", "intensity": 0.3}
+        return {"type": "none"}
