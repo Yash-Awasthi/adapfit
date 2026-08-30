@@ -1,429 +1,241 @@
-"""Biomarker Tracker — Bloodwork Analysis and Trend Detection.
-
-Extracted from biomarkerdash (inspiration).
-Parses bloodwork data, tracks biomarker trends over time,
-analyzes reference ranges, and detects abnormal values.
-
-All pure functions — no DB, no async, no pandas dependency.
 """
-
-from __future__ import annotations
-
-import math
+Biomarker Tracker & Anomaly Detection for ZFIT
+Extracted from: bloodboy-biomarkers-tracker (blood test analysis)
+Patterns: Biomarker extraction, trend analysis, anomaly detection,
+          unit conversion, reference range comparison, visualization data
+"""
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime
+from enum import Enum
 from typing import Optional
 
 
-@dataclass
-class Biomarker:
-    """A single biomarker with metadata and history."""
-    name: str
-    description: str = ""
-    unit: str = ""
-    ref_range_min: Optional[float] = None
-    ref_range_max: Optional[float] = None
-    history: list = field(default_factory=list)  # list of (date_str, value)
+class BiomarkerStatus(Enum):
+    LOW = "low"
+    NORMAL = "normal"
+    HIGH = "high"
+    CRITICAL_LOW = "critical_low"
+    CRITICAL_HIGH = "critical_high"
 
 
 @dataclass
-class BiomarkerAnalysis:
-    """Analysis result for a biomarker."""
+class ReferenceRange:
+    low: float
+    high: float
+    unit: str
+    critical_low: Optional[float] = None
+    critical_high: Optional[float] = None
+
+
+@dataclass
+class BiomarkerReading:
     name: str
-    latest_value: Optional[float] = None
-    latest_date: str = ""
-    status: str = "unknown"  # normal, low, high, critical_low, critical_high
-    deviation_pct: float = 0.0  # percentage from reference midpoint
-    trend: str = "stable"  # rising, falling, stable, insufficient_data
-    trend_slope: float = 0.0  # rate of change per month
-    data_points: int = 0
-    min_value: float = 0.0
-    max_value: float = 0.0
-    mean_value: float = 0.0
+    value: float
+    unit: str
+    timestamp: datetime
+    test_name: str = ""
+    lab_name: str = ""
+    notes: str = ""
 
 
-# Common biomarker reference ranges (adult, general population)
-REFERENCE_RANGES = {
-    # Cardiovascular
-    "Total Cholesterol": (0, 200, "mg/dL"),
-    "HDL Cholesterol": (40, 60, "mg/dL"),
-    "LDL Cholesterol": (0, 100, "mg/dL"),
-    "Triglycerides": (0, 150, "mg/dL"),
-    "hs-CRP": (0, 3.0, "mg/L"),
+@dataclass
+class BiomarkerTrend:
+    name: str
+    readings: list[BiomarkerReading]
+    current_value: float
+    reference_range: ReferenceRange
+    status: BiomarkerStatus
+    trend_direction: str  # "rising", "falling", "stable"
+    change_rate: float  # % change per month
+    anomaly_detected: bool
+    anomaly_description: str = ""
 
-    # Blood Sugar
-    "Fasting Glucose": (70, 100, "mg/dL"),
-    "HbA1c": (4.0, 5.7, "%"),
 
-    # Thyroid
-    "TSH": (0.4, 4.0, "mIU/L"),
-    "Free T3": (2.3, 4.2, "pg/mL"),
-    "Free T4": (0.8, 1.8, "ng/dL"),
+# ─── Reference Ranges (common blood markers) ──────────────────────────
 
-    # Blood Count
-    "Hemoglobin Male": (13.5, 17.5, "g/dL"),
-    "Hemoglobin Female": (12.0, 16.0, "g/dL"),
-    "WBC": (4.5, 11.0, "K/uL"),
-    "Platelets": (150, 400, "K/uL"),
-
-    # Metabolic
-    "Creatinine": (0.6, 1.2, "mg/dL"),
-    "BUN": (7, 20, "mg/dL"),
-    "eGFR": (60, 120, "mL/min"),
-    "Uric Acid": (3.4, 7.0, "mg/dL"),
-
-    # Vitamins & Minerals
-    "Vitamin D": (30, 100, "ng/mL"),
-    "Vitamin B12": (200, 900, "pg/mL"),
-    "Iron": (60, 170, "ug/dL"),
-    "Ferritin Male": (20, 250, "ng/mL"),
-    "Ferritin Female": (10, 120, "ng/mL"),
-
-    # Liver
-    "ALT": (7, 56, "U/L"),
-    "AST": (10, 40, "U/L"),
-    "Alkaline Phosphatase": (44, 147, "U/L"),
-
-    # Hormones
-    "Testosterone Male": (264, 916, "ng/dL"),
-    "Testosterone Female": (15, 70, "ng/dL"),
-    "Estradiol Male": (10, 40, "pg/mL"),
-    "Cortisol": (6, 23, "ug/dL"),
-
-    # Inflammation
-    "ESR Male": (0, 15, "mm/hr"),
-    "ESR Female": (0, 20, "mm/hr"),
+COMMON_REFERENCE_RANGES = {
+    "hemoglobin": ReferenceRange(low=12.0, high=17.5, unit="g/dL", critical_low=7.0, critical_high=20.0),
+    "wbc": ReferenceRange(low=4.5, high=11.0, unit="K/uL", critical_low=2.0, critical_high=30.0),
+    "platelets": ReferenceRange(low=150, high=400, unit="K/uL", critical_low=50, critical_high=800),
+    "glucose_fasting": ReferenceRange(low=70, high=100, unit="mg/dL", critical_low=50, critical_high=400),
+    "cholesterol_total": ReferenceRange(low=0, high=200, unit="mg/dL", critical_high=300),
+    "ldl": ReferenceRange(low=0, high=100, unit="mg/dL", critical_high=190),
+    "hdl": ReferenceRange(low=40, high=80, unit="mg/dL", critical_low=20),
+    "triglycerides": ReferenceRange(low=0, high=150, unit="mg/dL", critical_high=500),
+    "creatinine": ReferenceRange(low=0.6, high=1.2, unit="mg/dL", critical_low=0.3, critical_high=4.0),
+    "bun": ReferenceRange(low=7, high=20, unit="mg/dL", critical_high=80),
+    "alt": ReferenceRange(low=7, high=56, unit="U/L", critical_high=500),
+    "ast": ReferenceRange(low=10, high=40, unit="U/L", critical_high=500),
+    "tsh": ReferenceRange(low=0.4, high=4.0, unit="mIU/L", critical_low=0.1, critical_high=10.0),
+    "vitamin_d": ReferenceRange(low=30, high=100, unit="ng/mL", critical_low=10, critical_high=150),
+    "iron": ReferenceRange(low=60, high=170, unit="ug/dL", critical_low=20, critical_high=400),
+    "ferritin": ReferenceRange(low=12, high=300, unit="ng/mL", critical_low=5, critical_high=1000),
+    "hba1c": ReferenceRange(low=4.0, high=5.7, unit="%", critical_high=12.0),
+    "crp": ReferenceRange(low=0, high=3.0, unit="mg/L", critical_high=50),
+    "esr": ReferenceRange(low=0, high=20, unit="mm/hr", critical_high=100),
 }
 
 
-def parse_reference_range(range_str: str) -> tuple[Optional[float], Optional[float]]:
-    """Parse a reference range string.
+# ─── Status Classification ─────────────────────────────────────────────
 
-    Supports formats: "70-100", "0-3.0", ">60", "<4.0", "60-120"
-
-    Args:
-        range_str: Reference range string
-
-    Returns:
-        Tuple of (min, max) or (None, value) for open-ended ranges
-    """
-    range_str = range_str.strip()
-
-    if not range_str:
-        return None, None
-
-    # Handle > and < prefixes
-    if range_str.startswith(">"):
-        try:
-            val = float(range_str[1:].strip())
-            return val, None
-        except ValueError:
-            return None, None
-
-    if range_str.startswith("<"):
-        try:
-            val = float(range_str[1:].strip())
-            return None, val
-        except ValueError:
-            return None, None
-
-    # Handle dash separator
-    for sep in ["-", "–", "—"]:
-        if sep in range_str:
-            parts = range_str.split(sep, 1)
-            try:
-                low = float(parts[0].strip())
-                high = float(parts[1].strip())
-                return low, high
-            except ValueError:
-                continue
-
-    return None, None
+def classify_biomarker(value: float, reference: ReferenceRange) -> BiomarkerStatus:
+    """Classify a biomarker reading against its reference range."""
+    if reference.critical_low is not None and value <= reference.critical_low:
+        return BiomarkerStatus.CRITICAL_LOW
+    if reference.critical_high is not None and value >= reference.critical_high:
+        return BiomarkerStatus.CRITICAL_HIGH
+    if value < reference.low:
+        return BiomarkerStatus.LOW
+    if value > reference.high:
+        return BiomarkerStatus.HIGH
+    return BiomarkerStatus.NORMAL
 
 
-def classify_value(
-    value: float,
-    ref_min: Optional[float] = None,
-    ref_max: Optional[float] = None,
-) -> str:
-    """Classify a biomarker value against reference range.
-
-    Args:
-        value: Biomarker value
-        ref_min: Reference range minimum
-        ref_max: Reference range maximum
-
-    Returns:
-        Classification: normal, low, high, critical_low, critical_high, unknown
-    """
-    if ref_min is None and ref_max is None:
-        return "unknown"
-
-    if ref_min is not None and ref_max is not None:
-        midpoint = (ref_min + ref_max) / 2.0
-        range_width = ref_max - ref_min
-
-        if value < ref_min:
-            deviation = (ref_min - value) / range_width if range_width > 0 else 0
-            return "critical_low" if deviation > 0.5 else "low"
-        elif value > ref_max:
-            deviation = (value - ref_max) / range_width if range_width > 0 else 0
-            return "critical_high" if deviation > 0.5 else "high"
-        else:
-            return "normal"
-
-    if ref_min is not None:
-        return "normal" if value >= ref_min else "low"
-
-    if ref_max is not None:
-        return "normal" if value <= ref_max else "high"
-
-    return "unknown"
+def status_severity(status: BiomarkerStatus) -> int:
+    """Return severity score (0=normal, 4=critical)."""
+    return {
+        BiomarkerStatus.NORMAL: 0,
+        BiomarkerStatus.LOW: 1,
+        BiomarkerStatus.HIGH: 1,
+        BiomarkerStatus.CRITICAL_LOW: 4,
+        BiomarkerStatus.CRITICAL_HIGH: 4,
+    }[status]
 
 
-def compute_deviation_pct(
-    value: float,
-    ref_min: Optional[float] = None,
-    ref_max: Optional[float] = None,
-) -> float:
-    """Compute percentage deviation from reference midpoint.
+# ─── Trend Analysis ────────────────────────────────────────────────────
 
-    Args:
-        value: Biomarker value
-        ref_min: Reference minimum
-        ref_max: Reference maximum
+def analyze_trend(readings: list[BiomarkerReading], reference: ReferenceRange) -> BiomarkerTrend:
+    """Analyze trends in a series of biomarker readings."""
+    if not readings:
+        raise ValueError("Need at least one reading")
 
-    Returns:
-        Percentage deviation (positive = above range, negative = below)
-    """
-    if ref_min is None or ref_max is None:
-        return 0.0
+    sorted_readings = sorted(readings, key=lambda r: r.timestamp)
+    current = sorted_readings[-1]
+    status = classify_biomarker(current.value, reference)
 
-    midpoint = (ref_min + ref_max) / 2.0
-    range_width = ref_max - ref_min
+    trend_direction = "stable"
+    change_rate = 0.0
+    anomaly_detected = False
+    anomaly_description = ""
 
-    if range_width == 0:
-        return 0.0
+    if len(sorted_readings) >= 2:
+        first = sorted_readings[0]
+        last = sorted_readings[-1]
+        time_diff_months = max(0.1, (last.timestamp - first.timestamp).total_seconds() / (30 * 24 * 3600))
 
-    return ((value - midpoint) / range_width) * 100.0
+        if first.value != 0:
+            change_rate = ((last.value - first.value) / abs(first.value)) * 100 / time_diff_months
 
+        if change_rate > 5:
+            trend_direction = "rising"
+        elif change_rate < -5:
+            trend_direction = "falling"
 
-def detect_trend(
-    values: list[float],
-    window: int = 3,
-) -> tuple[str, float]:
-    """Detect trend direction from a series of values.
+        # Anomaly detection: check for rapid changes or out-of-range values
+        values = [r.value for r in sorted_readings]
+        mean_val = sum(values) / len(values)
+        if len(values) >= 3:
+            variance = sum((v - mean_val) ** 2 for v in values) / len(values)
+            std_dev = variance ** 0.5
 
-    Uses linear regression slope over the most recent window.
+            if std_dev > 0 and abs(last.value - mean_val) > 2 * std_dev:
+                anomaly_detected = True
+                anomaly_description = f"Value {last.value} deviates {abs(last.value - mean_val)/std_dev:.1f}σ from mean ({mean_val:.2f})"
 
-    Args:
-        values: Chronological list of values
-        window: Number of recent values to analyze
+        # Check for crossing critical thresholds
+        prev_status = classify_biomarker(sorted_readings[-2].value, reference)
+        if status_severity(status) > status_severity(prev_status):
+            anomaly_detected = True
+            anomaly_description = f"Status worsened from {prev_status.value} to {status.value}"
 
-    Returns:
-        Tuple of (direction, slope_per_month)
-    """
-    if len(values) < 2:
-        return "insufficient_data", 0.0
-
-    recent = values[-window:] if len(values) >= window else values
-    n = len(recent)
-
-    # Linear regression
-    x_mean = (n - 1) / 2.0
-    y_mean = sum(recent) / n
-
-    numerator = sum((i - x_mean) * (recent[i] - y_mean) for i in range(n))
-    denominator = sum((i - x_mean) ** 2 for i in range(n))
-
-    if denominator == 0:
-        return "stable", 0.0
-
-    slope = numerator / denominator
-
-    # Classify direction
-    if slope > 0.5:
-        direction = "rising"
-    elif slope < -0.5:
-        direction = "falling"
-    else:
-        direction = "stable"
-
-    return direction, round(slope, 3)
-
-
-def analyze_biomarker(
-    biomarker: Biomarker,
-) -> BiomarkerAnalysis:
-    """Perform complete analysis of a biomarker.
-
-    Args:
-        biomarker: Biomarker with history data
-
-    Returns:
-        BiomarkerAnalysis with all computed metrics
-    """
-    if not biomarker.history:
-        return BiomarkerAnalysis(name=biomarker.name)
-
-    values = [v for _, v in biomarker.history]
-    latest_val = values[-1]
-    latest_date = biomarker.history[-1][0]
-
-    # Classification
-    status = classify_value(latest_val, biomarker.ref_range_min, biomarker.ref_range_max)
-    deviation = compute_deviation_pct(latest_val, biomarker.ref_range_min, biomarker.ref_range_max)
-
-    # Trend
-    direction, slope = detect_trend(values)
-
-    # Statistics
-    n = len(values)
-    mean_val = sum(values) / n
-
-    return BiomarkerAnalysis(
-        name=biomarker.name,
-        latest_value=latest_val,
-        latest_date=latest_date,
+    return BiomarkerTrend(
+        name=current.name,
+        readings=sorted_readings,
+        current_value=current.value,
+        reference_range=reference,
         status=status,
-        deviation_pct=round(deviation, 1),
-        trend=direction,
-        trend_slope=slope,
-        data_points=n,
-        min_value=min(values),
-        max_value=max(values),
-        mean_value=round(mean_val, 2),
+        trend_direction=trend_direction,
+        change_rate=round(change_rate, 2),
+        anomaly_detected=anomaly_detected,
+        anomaly_description=anomaly_description,
     )
 
 
-def analyze_panel(
-    biomarkers: list[Biomarker],
+# ─── Unit Conversion ───────────────────────────────────────────────────
+
+UNIT_CONVERSIONS = {
+    ("mg/dL", "mmol/L"): lambda v: v / 18.018,
+    ("mmol/L", "mg/dL"): lambda v: v * 18.018,
+    ("ng/mL", "nmol/L"): lambda v: v * 2.496,
+    ("nmol/L", "ng/mL"): lambda v: v / 2.496,
+    ("ug/dL", "umol/L"): lambda v: v / 5.585,
+    ("umol/L", "ug/dL"): lambda v: v * 5.585,
+}
+
+
+def convert_unit(value: float, from_unit: str, to_unit: str) -> Optional[float]:
+    """Convert between common biomarker units."""
+    if from_unit == to_unit:
+        return value
+    converter = UNIT_CONVERSIONS.get((from_unit, to_unit))
+    return round(converter(value), 4) if converter else None
+
+
+# ─── Dashboard Data ────────────────────────────────────────────────────
+
+def generate_biomarker_dashboard(
+    readings: list[BiomarkerReading],
+    reference_ranges: dict[str, ReferenceRange] = None,
 ) -> dict:
-    """Analyze a complete bloodwork panel.
+    """Generate a comprehensive biomarker dashboard."""
+    if reference_ranges is None:
+        reference_ranges = COMMON_REFERENCE_RANGES
 
-    Args:
-        biomarkers: List of biomarkers to analyze
+    # Group readings by biomarker name
+    grouped: dict[str, list[BiomarkerReading]] = {}
+    for r in readings:
+        grouped.setdefault(r.name.lower(), []).append(r)
 
-    Returns:
-        Panel analysis with per-marker results and summary
-    """
-    analyses = []
-    abnormal_count = 0
-    critical_count = 0
+    trends = []
+    alerts = []
+    summary = {"total": 0, "normal": 0, "abnormal": 0, "critical": 0}
 
-    for marker in biomarkers:
-        analysis = analyze_biomarker(marker)
-        analyses.append(analysis)
-
-        if analysis.status in ("low", "high"):
-            abnormal_count += 1
-        elif analysis.status in ("critical_low", "critical_high"):
-            critical_count += 1
-
-    # Overall health score
-    total = len(analyses)
-    if total == 0:
-        health_score = 0.0
-    else:
-        normal_count = sum(1 for a in analyses if a.status == "normal")
-        health_score = (normal_count / total) * 100.0
-
-    return {
-        "total_markers": total,
-        "normal_count": sum(1 for a in analyses if a.status == "normal"),
-        "abnormal_count": abnormal_count,
-        "critical_count": critical_count,
-        "health_score": round(health_score, 1),
-        "analyses": analyses,
-    }
-
-
-def track_longitudinal_changes(
-    biomarkers: list[Biomarker],
-    months_threshold: int = 6,
-) -> list[dict]:
-    """Identify biomarkers with significant longitudinal changes.
-
-    Args:
-        biomarkers: List of biomarkers with history
-        months_threshold: Minimum months of data for significance
-
-    Returns:
-        List of significant changes with direction and magnitude
-    """
-    significant = []
-
-    for marker in biomarkers:
-        if len(marker.history) < 2:
+    for name, marker_readings in grouped.items():
+        ref = reference_ranges.get(name)
+        if not ref:
             continue
 
-        values = [v for _, v in marker.history]
-        direction, slope = detect_trend(values, window=len(values))
+        trend = analyze_trend(marker_readings, ref)
+        trends.append(trend)
 
-        # Compute overall change
-        first_val = values[0]
-        last_val = values[-1]
-        if first_val != 0:
-            pct_change = ((last_val - first_val) / abs(first_val)) * 100.0
-        else:
-            pct_change = 0.0
-
-        if abs(pct_change) > 10:  # >10% change is significant
-            significant.append({
-                "name": marker.name,
-                "first_value": first_val,
-                "latest_value": last_val,
-                "pct_change": round(pct_change, 1),
-                "direction": direction,
-                "slope": slope,
-                "data_points": len(marker.history),
+        summary["total"] += 1
+        if trend.status == BiomarkerStatus.NORMAL:
+            summary["normal"] += 1
+        elif trend.status in (BiomarkerStatus.CRITICAL_LOW, BiomarkerStatus.CRITICAL_HIGH):
+            summary["critical"] += 1
+            alerts.append({
+                "name": name,
+                "status": trend.status.value,
+                "value": trend.current_value,
+                "reference": f"{ref.low}-{ref.high} {ref.unit}",
             })
+        else:
+            summary["abnormal"] += 1
 
-    return sorted(significant, key=lambda x: abs(x["pct_change"]), reverse=True)
-
-
-def generate_clinical_summary(
-    analyses: list[BiomarkerAnalysis],
-) -> str:
-    """Generate a human-readable clinical summary.
-
-    Args:
-        analyses: List of biomarker analyses
-
-    Returns:
-        Summary string
-    """
-    if not analyses:
-        return "No biomarker data available."
-
-    critical = [a for a in analyses if a.status in ("critical_low", "critical_high")]
-    abnormal = [a for a in analyses if a.status in ("low", "high")]
-    rising = [a for a in analyses if a.trend == "rising"]
-    falling = [a for a in analyses if a.trend == "falling"]
-
-    lines = []
-
-    if critical:
-        lines.append(f"CRITICAL: {len(critical)} marker(s) outside safe range:")
-        for a in critical:
-            lines.append(f"  - {a.name}: {a.latest_value} ({a.status})")
-
-    if abnormal:
-        lines.append(f"ABNORMAL: {len(abnormal)} marker(s) outside reference range:")
-        for a in abnormal:
-            lines.append(f"  - {a.name}: {a.latest_value} ({a.status})")
-
-    if rising:
-        lines.append(f"RISING: {len(rising)} marker(s) trending upward:")
-        for a in rising[:5]:
-            lines.append(f"  - {a.name}: slope {a.trend_slope}/month")
-
-    if falling:
-        lines.append(f"FALLING: {len(falling)} marker(s) trending downward:")
-        for a in falling[:5]:
-            lines.append(f"  - {a.name}: slope {a.trend_slope}/month")
-
-    if not lines:
-        lines.append("All markers within normal range with stable trends.")
-
-    return "\n".join(lines)
+    return {
+        "summary": summary,
+        "trends": [
+            {
+                "name": t.name,
+                "value": t.current_value,
+                "status": t.status.value,
+                "trend": t.trend_direction,
+                "change_rate": t.change_rate,
+                "anomaly": t.anomaly_detected,
+                "anomaly_desc": t.anomaly_description,
+                "reference": f"{t.reference_range.low}-{t.reference_range.high} {t.reference_range.unit}",
+            }
+            for t in trends
+        ],
+        "alerts": alerts,
+    }
