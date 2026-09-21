@@ -10,7 +10,6 @@ Based on 2025 research on allergy apps:
 """
 
 import time
-import random
 from typing import Dict, List, Optional, Any
 
 
@@ -18,6 +17,7 @@ class AllergyTrackerService:
     """Comprehensive allergy tracking and management."""
 
     def __init__(self):
+        self._pollen_readings: Dict[str, Dict[str, Any]] = {}
         self.profiles: Dict[str, Dict] = {}
         self.symptom_logs: Dict[str, List] = {}
         self._init_allergen_data()
@@ -78,25 +78,67 @@ class AllergyTrackerService:
         self.symptom_logs[user_id].append(entry)
         return entry
 
-    def get_pollen_forecast(self, location: str, days: int = 3) -> List[Dict[str, Any]]:
-        """Get pollen forecast for a location."""
-        forecast = []
-        month = 7  # simulated
+    def record_pollen_reading(self, location: str, counts: Dict[str, int]) -> Dict[str, Any]:
+        """Store a pollen count per type for a location, from a pollen service."""
+        self._pollen_readings[location] = {
+            "counts": {str(k): int(v) for k, v in counts.items()},
+            "recorded_at": time.time(),
+        }
+        return {"recorded": True, "location": location, "types": len(counts)}
 
-        for day in range(days):
-            day_forecast = {"day": day + 1, "pollen_levels": {}}
-            for pollen_type, info in self.pollen_types.items():
-                if month in info["months"]:
-                    level = random.choice(["low", "moderate", "high", "very_high"])
-                    day_forecast["pollen_levels"][pollen_type] = {
-                        "level": level,
-                        "count": random.randint(1, 12) if level == "low" else random.randint(12, 30) if level == "moderate" else random.randint(30, 80),
-                        "dominant_species": random.choice(info["types"]),
-                    }
-                else:
-                    day_forecast["pollen_levels"][pollen_type] = {"level": "none", "count": 0}
-            forecast.append(day_forecast)
-        return forecast
+    @staticmethod
+    def _pollen_level(count: int) -> str:
+        """Grains per cubic metre, on the usual reporting bands."""
+        if count <= 0:
+            return "none"
+        if count < 12:
+            return "low"
+        if count < 30:
+            return "moderate"
+        if count < 80:
+            return "high"
+        return "very_high"
+
+    def get_pollen_forecast(self, location: str, days: int = 3) -> Dict[str, Any]:
+        """
+        Pollen counts for a location, from the last recorded reading.
+
+        The levels and counts used to be drawn at random, which is worse than
+        useless for someone deciding whether to go out with hay fever or
+        asthma. In season is not the same as high today, so what is out of
+        season is still reported as none and everything else needs a count.
+        """
+        reading = self._pollen_readings.get(location)
+        if reading is None:
+            return {
+                "status": "unavailable",
+                "location": location,
+                "reason": "no_reading",
+                "message": (
+                    "No pollen count for this location. Connect a pollen data source "
+                    "or record a reading."
+                ),
+                "tracked_types": {name: info["months"] for name, info in self.pollen_types.items()},
+            }
+
+        counts = reading["counts"]
+        levels = {
+            pollen_type: {
+                "level": self._pollen_level(counts.get(pollen_type, 0)),
+                "count": counts.get(pollen_type, 0),
+                "species": info["types"],
+            }
+            for pollen_type, info in self.pollen_types.items()
+        }
+        return {
+            "status": "ok",
+            "location": location,
+            "recorded_at": reading["recorded_at"],
+            "pollen_levels": levels,
+            # A count is a measurement of today; forecasting needs a provider
+            # that forecasts, so none is offered.
+            "forecast_days_available": 0,
+        }
 
     def analyze_triggers(self, user_id: str) -> Dict[str, Any]:
         """Analyze symptom patterns to identify triggers."""
