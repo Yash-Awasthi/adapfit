@@ -3,6 +3,7 @@ from app.services.substance_use import SubstanceUseService
 from app.services.fertility_tracker import FertilityTrackerService
 from app.services.health_equity import HealthEquityService
 from app.services.health_savings import HealthSavingsService
+from app.services.ambient_health import AmbientHealthService
 
 
 def test_substance_use_clamps_do_not_crash():
@@ -52,3 +53,13 @@ def test_health_savings_expense_eligibility_is_derived_not_hardcoded():
     assert eligible["eligible"] is True
     ineligible = svc.expense("u1", 10, "Gym Membership", "monthly")
     assert ineligible["eligible"] is False
+
+
+def test_ambient_health_reports_no_data_instead_of_a_fixed_fifty():
+    svc = AmbientHealthService()
+    home = svc.register_home("u1", {"name": "Home"})
+    result = svc.get_environment_health(home["home_id"])
+    assert result["status"] == "no_data"
+
+    homes = svc.get_homes()
+    assert len(homes) == 1 and homes[0]["home_id"] == home["home_id"]

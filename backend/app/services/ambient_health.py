@@ -97,6 +97,10 @@ class AmbientHealthService:
         }
         return self.homes[home_id]
 
+    def get_homes(self) -> List[Dict]:
+        """Homes registered by the current user."""
+        return list(self.homes.values())
+
     def register_device(self, home_id: str, device_config: Dict[str, Any]) -> Dict[str, Any]:
         """Register an IoT device for health monitoring."""
         device_id = f"dev_{int(time.time())}_{random.randint(1000, 9999)}"
@@ -170,7 +174,15 @@ class AmbientHealthService:
                                     for r, d in zip(readings, room_devices)) / len(readings)
                     room_scores[room] = {"score": round(avg_score, 1), "devices": len(room_devices)}
 
-        overall = sum(r["score"] for r in room_scores.values()) / max(1, len(room_scores)) if room_scores else 50
+        if not room_scores:
+            return {
+                "home_id": home_id,
+                "status": "no_data",
+                "message": "No device has reported a reading yet.",
+                "device_count": len(home["devices"]),
+            }
+
+        overall = sum(r["score"] for r in room_scores.values()) / len(room_scores)
 
         return {
             "home_id": home_id,
