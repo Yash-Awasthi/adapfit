@@ -64,6 +64,37 @@ class EnvironmentalHealthService:
         }
         return {"recorded": True, "location": location, "aqi": int(aqi)}
 
+    async def fetch_air_quality(self, location: str) -> Dict[str, Any]:
+        """Fetch a live reading, record it, and return the interpreted result."""
+        from app.services import open_meteo
+
+        reading = await open_meteo.air_quality(location)
+        if reading.get("status") != "ok":
+            return {**reading, "location": location, "advice_scale": self.aqi_scale}
+        self.record_air_quality(location, reading["aqi"], reading["pollutants"])
+        result = self.get_air_quality(location)
+        result["source"] = reading["source"]
+        result["observed_at"] = reading["observed_at"]
+        return result
+
+    async def fetch_uv_index(self, location: str) -> Dict[str, Any]:
+        from app.services import open_meteo
+
+        reading = await open_meteo.uv_index(location)
+        if reading.get("status") != "ok":
+            return {**reading, "location": location, "advice_scale": self.uv_scale}
+        self.record_uv_index(location, reading["uv_index"])
+        result = self.get_uv_index(location)
+        result["source"] = reading["source"]
+        result["observed_at"] = reading["observed_at"]
+        return result
+
+    async def fetch_outdoor_exercise_safety(self, location: str, activity: str = "running") -> Dict[str, Any]:
+        """Refresh both readings, then judge conditions."""
+        await self.fetch_air_quality(location)
+        await self.fetch_uv_index(location)
+        return self.get_outdoor_exercise_safety(location, activity)
+
     def get_air_quality(self, location: str) -> Dict[str, Any]:
         """
         Air quality for a location, from the last recorded reading.

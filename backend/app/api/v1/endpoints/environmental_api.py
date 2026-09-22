@@ -35,20 +35,35 @@ async def record_uv_index(reading: UVReading):
 
 
 @router.get("/air-quality/{location}")
-async def get_air_quality(location: str):
-    result = environmental_health_service.get_air_quality(location)
+async def get_air_quality(location: str, live: bool = True):
+    """
+    Air quality for a location.
+
+    Fetches from Open-Meteo by default, which needs no API key. Pass
+    live=false to read only what has already been recorded.
+    """
+    if live:
+        result = await environmental_health_service.fetch_air_quality(location)
+    else:
+        result = environmental_health_service.get_air_quality(location)
     return {"success": True, "data": result}
 
 
 @router.get("/uv-index/{location}")
-async def get_uv_index(location: str):
-    result = environmental_health_service.get_uv_index(location)
+async def get_uv_index(location: str, live: bool = True):
+    if live:
+        result = await environmental_health_service.fetch_uv_index(location)
+    else:
+        result = environmental_health_service.get_uv_index(location)
     return {"success": True, "data": result}
 
 
 @router.get("/outdoor-safety/{location}")
-async def get_outdoor_safety(location: str, activity: str = "running"):
-    result = environmental_health_service.get_outdoor_exercise_safety(location, activity)
+async def get_outdoor_safety(location: str, activity: str = "running", live: bool = True):
+    if live:
+        result = await environmental_health_service.fetch_outdoor_exercise_safety(location, activity)
+    else:
+        result = environmental_health_service.get_outdoor_exercise_safety(location, activity)
     return {"success": True, "data": result}
 
 

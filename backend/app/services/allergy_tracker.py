@@ -99,6 +99,40 @@ class AllergyTrackerService:
             return "high"
         return "very_high"
 
+    async def fetch_pollen(self, location: str) -> Dict[str, Any]:
+        """Fetch live pollen counts, record them, and return the levels."""
+        from app.services import open_meteo
+
+        reading = await open_meteo.pollen(location)
+        if reading.get("status") != "ok":
+            return {
+                **reading,
+                "location": location,
+                "tracked_types": {name: info["months"] for name, info in self.pollen_types.items()},
+            }
+        self.record_pollen_reading(location, self._to_categories(reading["counts"]))
+        result = self.get_pollen_forecast(location)
+        result["source"] = reading["source"]
+        result["observed_at"] = reading["observed_at"]
+        return result
+
+    # The provider reports by species; this tracker works in categories, and
+    # a species with no category would otherwise read as a zero count.
+    SPECIES_CATEGORY = {
+        "alder": "tree", "birch": "tree", "olive": "tree",
+        "grass": "grass",
+        "mugwort": "weed", "ragweed": "weed",
+    }
+
+    def _to_categories(self, counts: Dict[str, float]) -> Dict[str, int]:
+        """Sum species counts into the categories this tracker reports."""
+        totals: Dict[str, float] = {}
+        for species, value in counts.items():
+            category = self.SPECIES_CATEGORY.get(species)
+            if category:
+                totals[category] = totals.get(category, 0) + float(value)
+        return {category: int(round(value)) for category, value in totals.items()}
+
     def get_pollen_forecast(self, location: str, days: int = 3) -> Dict[str, Any]:
         """
         Pollen counts for a location, from the last recorded reading.
