@@ -66,7 +66,8 @@ CHRONOTYPES = {
 
 
 def _minutes_of_day(entry: dict) -> Optional[int]:
-    stamp = entry.get("time_of_day")
+    # Energy entries store "time_of_day", light entries store "time".
+    stamp = entry.get("time_of_day") or entry.get("time")
     if not isinstance(stamp, str) or ":" not in stamp:
         return None
     hours, _, minutes = stamp.partition(":")
@@ -91,13 +92,23 @@ def _clock_consistency(entries: list) -> int:
     return max(0, min(100, int(round(100 - (spread / 120) * 100))))
 
 
+def _day_of(entry: dict) -> str:
+    """Calendar day of an entry, for averaging exposure per day."""
+    stamp = entry.get("timestamp")
+    if not stamp:
+        return ""
+    from datetime import datetime
+
+    return datetime.fromtimestamp(float(stamp)).strftime("%Y-%m-%d")
+
+
 def _light_exposure_score(entries: list) -> int:
     """Against the 10,000 lux-minutes a day that anchors the body clock."""
     daily_target = 10000
     exposure = sum(
         (e.get("lux") or 0) * (e.get("duration_minutes") or 0) / 60 for e in entries
     )
-    days = max(1, len({e.get("time_of_day", "") for e in entries}))
+    days = max(1, len({_day_of(e) for e in entries}))
     return max(0, min(100, int(round((exposure / days) / daily_target * 100))))
 
 
