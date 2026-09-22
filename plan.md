@@ -1316,6 +1316,13 @@ Every one now derives from real input or reports that the input is missing.
 measurement across all 280 services, with an explicit allowlist for the uses
 that pick wording or generate an id.
 
+Camera heart rate has since been finished: `react-native-vision-camera` reads
+the back camera's RGB buffer with the torch on, and the averages go to the
+same CHROM estimator (`rppg_api.py`) instead of standing idle behind the
+`FRAME_SAMPLING_AVAILABLE` switch. Untested on real hardware — no Android SDK
+or device in this environment; verify torch behavior and finger-placement
+signal quality on a phone before shipping.
+
 ### 6. Real data where it was invented
 
 Air quality, UV index and pollen come from Open-Meteo, which is free and needs
@@ -1374,11 +1381,9 @@ id the mobile app never stored.
 
 ### Still open
 
-- Camera heart rate needs a frame processor. The analysis half is real and
-  server-side (`rppg_api.py`, CHROM and green-channel); what is missing is
-  per-frame pixel access, which `expo-camera` does not provide. The switch is
-  `FRAME_SAMPLING_AVAILABLE` in `app/camera-heart-rate.tsx`.
-- Posture assessment needs the same: a pose detector supplying body landmarks.
+- Posture assessment needs a pose detector supplying body landmarks —
+  the same per-frame pixel access gap camera heart rate had, still open
+  there.
 - The telemedicine and hospital directories are sample data and now say so. They
   need a real provider before they mean anything.
 - The Postgres superuser password is winget's default. Fine on loopback, worth
