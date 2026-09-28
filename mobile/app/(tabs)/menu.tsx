@@ -9,7 +9,7 @@ import {
   ChevronRight, Sun, Moon as MoonIcon, Search, Calendar, BarChart3, Award,
   Brain, Moon, Shield, Utensils, Users, Settings as SettingsIcon,
   Download, Bell, Info, Pencil, Ruler, Droplet, Wrench,
-  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Leaf, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
+  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Leaf, Scale, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
   ChefHat, Droplets, Smile, Pill, Watch, CalendarDays, Siren, Accessibility,
 } from 'lucide-react-native';
 import { useTheme, AccentName, CARD_SHADOW } from '../../src/services/theme';
@@ -92,6 +92,7 @@ function buildCatalog(theme: any, showFemaleScreens: boolean): CatalogSection[] 
     {
       title: 'Body & Vitals',
       items: [
+        { icon: Scale, label: 'Body', sub: 'Weight, measurements, goals & photos', route: '/body', color: '#F97316' },
         { icon: HeartPulse, label: 'Vital Signs', sub: 'Heart rate & blood pressure', route: '/vital-signs', color: '#EF4444' },
         { icon: Activity, label: 'HRV', sub: 'Readings & breathing coach', route: '/hrv', color: '#10B981' },
         { icon: Pill, label: 'Medication', sub: 'Doses & reminders', route: '/medication', color: '#22C55E' },

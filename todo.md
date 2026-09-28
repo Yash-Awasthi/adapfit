@@ -31,7 +31,8 @@ Measure with `scratchpad coverage.py` (maps every mobile call to its module).
 - [x] Everyday Wellbeing hub: live AQI/UV, desk health, a digit-span memory game
       (real measured score), focus modes, travel health. Fixed an unreachable
       passport route. Peer support and vaccination records left API-only.
-- [ ] Body screen: measurements, progress photos, weight goal.
+- [x] Body screen: measurements, goals, on-device progress photos; trends no
+      longer report the whole weight as a change when an entry lacks it.
 - [ ] Family screen shows a hard-coded demo family; wire `family_network`.
 - [ ] Content feed falls back to items with invented view counts and ratings.
 - [ ] Blood pressure logging in vital signs (the BP classifier has no store).
