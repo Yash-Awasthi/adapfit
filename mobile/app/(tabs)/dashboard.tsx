@@ -387,7 +387,7 @@ export default function DashboardScreen() {
 
         {/* ─── Active Challenges ─────────────────── */}
         <View style={styles.section}>
-          <SectionHeaderPremium title="Active Challenges" icon="trophy" iconColor={colors.health.energy} action={{ label: 'Join More', onPress: () => router.push('/social' as any) }} />
+          <SectionHeaderPremium title="Active Challenges" icon="trophy" iconColor={colors.health.energy} action={{ label: 'Join More', onPress: () => router.push('/community' as any) }} />
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
             {challenges.length > 0 ? challenges.map((ch: any) => (
               <ChallengeCard key={ch.id ?? ch.title} title={ch.title} progress={ch.progress} daysLeft={ch.daysLeft} icon={ch.icon ?? 'trophy'} />
