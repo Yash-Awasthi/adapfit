@@ -9,27 +9,6 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 2b — Clinical modules built for real
-
-Cardiac rehab, skin health, medical imaging, genomics, telemedicine, diabetes,
-pregnancy, medication, remote monitoring, voice health. Each gets a real
-implementation that screens and refers without diagnosing.
-
-- Genomics disease risk is an invented additive model (0.1 baseline plus fixed
-  increments) reported as a probability; replace with published effect sizes
-  or report variants without a risk figure.
-- Skin and imaging: real image measurement (on-device segmentation) instead
-  of self-assessed ABCDE numbers.
-- Telemedicine: a real registered-practitioner provider, per the 2020 guidelines.
-- Medication: Indian brand names and the CDSCO drug list alongside OpenFDA.
-- Offline copies of the red-flag and first-aid content.
-- Stroke rehab, chronic disease management, hospital at home and wound
-  assessment are API-only; design each with a clinician before giving it a screen.
-- ME/CFS pacing (`chronic_fatigue`): wire with a screen; it defaults age to 35,
-  which sets the heart-rate ceiling, and uses `random`.
-- Coach marketplace: removed because every coach was invented; rebuild only with
-  verified, real practitioners (same rule as telemedicine).
-
 ## Phase 3 — Privacy, consent and user rights
 
 Target the DPDP Act 2023 and DPDP Rules 2025 first.
@@ -62,6 +41,9 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - Dependency and container scanning; third-party penetration test before launch.
 
 ## Phase 5 — Platform coverage and device data
+
+- Photo measurement of skin spots (`lesion_measure.py`) is tested on synthetic
+  images only; calibrate on real phone photos of moles with a coin.
 
 - iOS project, build profile and HealthKit entitlement.
 - Health Connect and HealthKit sync actually wired and installed.
@@ -112,6 +94,12 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 
 ## Phase 9 — User experience and quality
 
+- Stroke rehab, chronic disease management, hospital at home and wound
+  assessment are API-only; design each with a clinician before giving it a screen.
+- Coach marketplace: rebuild only with verified, real practitioners.
+- `mobile/e2e` has no runner installed (no detox or jest) and is excluded from
+  the typecheck; install one or delete it.
+
 - API-only features still without a screen: peer support, vaccination records
   (health passport), accessible workout alternatives, the accessibility API.
 - `test_mobile_api_paths.py` misses calls whose generic type contains nested
@@ -128,6 +116,10 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - End-to-end tests for the core journeys.
 
 ## Phase 10 — Launch readiness
+
+- Legal review of third-party data: the Indian Medicine Dataset (MIT, but
+  scraped retail listings) and use of the NMC register search.
+- Add the CDSCO list of banned fixed-dose combinations to the medicine check.
 
 - Store listings, screenshots, descriptions, age ratings, review notes.
 - Health data declarations for Google Play and Apple.

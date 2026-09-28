@@ -1484,3 +1484,64 @@ Defects found while wiring, beyond what earlier parts recorded:
   under one "default" user.
 - Broken: rehab progress crashed on every call; two routes were shadowed by
   catch-alls; in-app family invites could never be accepted.
+
+## Part 13 — Clinical modules built for real (todo.md Phase 2b)
+
+Measured at the start: telemedicine still listed eight invented doctors with
+ratings and bookable slots; genomics reported disease risk from an additive
+model (0.1 plus fixed increments) and a "genetic health score"; mole ABCDE
+derived asymmetry and border from the size typed in; ME/CFS pacing assumed age
+35; cardiac rehab set training zones from 220 minus age. 999 backend tests
+passed; the mobile typecheck failed on `e2e/`, which has no test runner
+installed and is now excluded.
+
+Decided with the user: telemedicine links out and checks registrations, image
+measurement runs on the backend, genomics shows published odds ratios, and
+Indian brands come from a large open dataset.
+
+- Telemedicine: eSanjeevani, Tele-MANAS and three private platforms as
+  outbound links, a "which doctor, how soon" guide, and a live check against
+  the NMC Indian Medical Register (its public JSON search). Only registration
+  fields are returned, not the address or birth date the register exposes.
+  Saved doctors record what the register said, not what the client claimed.
+- Genomics: parses 23andMe and AncestryDNA raw files (text or zip) and keeps
+  only a fixed panel; the file is discarded. Associations carry the published
+  per-copy odds ratio and its source (TCF7L2, FTO, 9p21). APOE is hidden until
+  the user asks, with a counselling note. CPIC phenotypes for CYP2C19, CYP2C9,
+  SLCO1B1 and VKORC1; CYP2D6 is reported as not callable from a chip. The old
+  advice to take methylfolate for MTHFR is gone.
+- Skin: `lesion_measure.py` segments the spot with OpenCV and measures
+  asymmetry, border compactness, colour spread in CIELAB, and diameter from a
+  coin of known size; blurry or empty photos are refused by edge width. The
+  0-1 cutoffs are unvalidated screening choices; the dependable signal is
+  change between photos of the same mole, which now counts as evolution.
+- Medication: 246,068 marketed products from the MIT-licensed Indian Medicine
+  Dataset, loaded lazily (~40 MB). Brands resolve to their ingredients; a brand
+  whose products differ (Dolo, Telma) is treated as every ingredient, since a
+  missed interaction is worse than an extra one. Interaction checks now see
+  Indian brands and spellings.
+- First aid and the red-flag replies ship inside the app and are used when the
+  network is down; a test fails if the bundled copy drifts. Snakebite and
+  poisoning (AIIMS poison centre) were added.
+- ME/CFS pacing: ceiling is measured resting heart rate plus 15 (Workwell),
+  or none; boom-bust detection; a section on the Conditions screen.
+
+Unsafe or wrong, found and fixed:
+
+- A dosage calculator (reduce by 25% over 65, defaults age 40 and 70 kg),
+  a timing optimiser and Beers "alternatives" were live endpoints.
+- A petechial rash with fever was "see a doctor within 24 hours"; it is now
+  an emergency, as are lip swelling and breathing trouble. Rash output named
+  meningococcaemia and herpes as causes.
+- Reduced fetal movement said "try again after a snack"; it now says contact
+  the maternity team today, judged against the baby's own pattern.
+- Cardiac zones use the rehab team's prescription, else resting plus 20, with
+  RPE 11-14 always shown; age-predicted zones fail on beta blockers.
+- The Fitzpatrick skin type never reached the skin-check plan (string key
+  looked up in an int-keyed table). First aid used 911, inches and °F.
+- Defaults removed: wound size 2 x 2 cm and pain 3, a 2,000 ml fluid limit,
+  30 s voice duration, pregnancy log fields.
+
+Left for later phases: stroke rehab, chronic disease, hospital at home and
+wound care stay API-only until a clinician designs them; the CDSCO banned
+fixed-dose-combination list; the coach marketplace.
