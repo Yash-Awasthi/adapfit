@@ -1429,3 +1429,25 @@ naming disorders.
 New guards: `test_mobile_api_paths.py` (every mobile call has a route; it found
 three screens calling paths that did not exist), `test_route_ownership.py`, and
 the random-reading sweep now covers route modules.
+
+## Part 11 — Durable feature state (todo.md Phase 2a)
+
+Only accounts, check-ins, workouts and a few other records reached Postgres.
+Everything else — 50 per-user services, 51 shared services and 40 module-level
+stores, including medical ID, medications, meals, sleep and pregnancy logs —
+lived in process memory and vanished on every restart. Two of the three
+Dockerfiles also ran four workers, so each worker held a different copy.
+
+`app/core/durable.py` writes that state through to one table (`feature_state`,
+migration 008): one row per user for per-user services, one per shared service,
+one per key for module stores. It loads at startup, saves only what a request
+touched and only when it changed, and restores through an allowlisting
+unpickler so a tampered row cannot run code. Services imported lazily are
+restored when they register. The per-user LRU eviction is gone, since an
+evicted user would have come back empty and been saved over. Overhead was
+below measurement noise (about 3 ms per request either way).
+
+Decided with the user: write-through with one worker on Railway for now;
+per-request loading by user is the upgrade path. `tests/test_durable_state.py`
+simulates a restart. Postgres itself was not exercised: the local password in
+`backend/.env` was rejected.

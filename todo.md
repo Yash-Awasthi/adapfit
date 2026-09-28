@@ -9,23 +9,6 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 2a — Durable storage for every feature
-
-Only users, baselines, check-ins, workouts, workloads, coach memory and diet
-plans reach Postgres. Everything else lives in process memory and is lost on
-every deploy or restart: 50 files with per-user services (`app/core/per_user.py`, which
-also evicts the least recent user past 512) and module-level dicts in 25
-route modules (meals, body measurements, challenges, community feed, sleep
-journal, habits, medications, mood questionnaires...). For a paid product this
-is data loss.
-
-- Measure exactly which state is memory-only.
-- One generic durable store (a `user_documents` table keyed by user, feature
-  and id, JSONB payload) that per-user services and route modules write through,
-  rather than a table per feature.
-- Migration path for the in-memory data that exists at switch-over.
-- Account deletion and export (Phase 3) then cover everything by construction.
-
 ## Phase 2c — Screen coverage for API-only features
 
 125 of 208 route modules have no screen calling them (measured 2026-09-28 with
@@ -57,6 +40,13 @@ implementation that screens and refers without diagnosing.
 
 Target the DPDP Act 2023 and DPDP Rules 2025 first.
 
+- Since Phase 2a all feature state is durable (`app/core/durable.py`, table
+  `feature_state`). Account deletion already erases per-user services and
+  user-keyed stores; about 50 shared services still keep each user's records
+  inside one object (medical ID, fertility, pregnancy, habits...). Deletion and
+  export must reach into those too, or they should become per-user services.
+- `/export/all` covers per-user services only; extend it the same way.
+
 - Account deletion that wipes every store (Postgres, per-user service state,
   files, caches, backups policy).
 - Full data export in a portable format.
@@ -72,6 +62,9 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - Rate limiting and abuse protection on auth and expensive routes.
 - Secrets management and credential rotation.
 - Public surfaces (`/metrics`, docs, admin pages, WebSockets).
+- `health_security` keeps encryption keys in process memory, and the auth audit
+  log is an in-memory list; both are lost on restart and neither belongs in the
+  feature store.
 - Dependency and container scanning; third-party penetration test before launch.
 
 ## Phase 5 — Platform coverage and device data
@@ -111,6 +104,10 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 ## Phase 8 — Infrastructure and operations
 
 - Build and deploy images; staging and production environments.
+- The server must run one worker until feature state moves to per-request
+  loading (all three Dockerfiles now say so). Three Dockerfiles is two too many.
+- Verify `feature_state` on real Postgres: local login for `adapfit` failed with
+  the password in `backend/.env` on 2026-09-28, so only SQLite was exercised.
 - Postgres backups with a tested restore.
 - Error tracking and crash reporting on backend and mobile.
 - Metrics, logs, uptime alerts, on-call basics.
