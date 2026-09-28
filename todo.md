@@ -33,6 +33,11 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
 - [x] Community: `/challenges` (now with create and per-user progress) and
       `/community` feed; `/social`, `/community-v2`, `/activity-feed` and the
       social screen removed. Dashboard's medication, challenge and feed panels fixed.
+- [x] New test `test_mobile_api_paths.py` fails on any mobile call to a path
+      the server lacks. It found: the vital signs screen calling `/vital-signs/*`
+      (server serves `/vitals/*`), health calendar calling `/calendar/cycle/*`,
+      health hub posting fixed inputs to a missing `/stress/assess` and showing
+      50 as the stress level, and a dead api-client module.
 - [ ] Dashboard screen needs a full wiring audit (it had three dead calls).
 - [x] Recovery: one engine (personal baseline). The dashboard scored HRV against
       population cut-offs with a second engine; it now explains the check-in score
@@ -70,7 +75,8 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       - [x] Insights: personal patterns (sleep vs next-day mood and recovery,
         10+ paired days, only clear differences) in the briefing. `quantified_self`
         turned out to be another logger with no correlation code; removed.
-      - Vital signs: `early_warning_score` (NEWS2) as a when-to-seek-care check.
+      - [x] Vital signs: NEWS2 home check (`/vitals/check`) with the single-parameter
+        red-score rule it was missing and plain next steps.
       - Conditions: `chronic_fatigue` (ME/CFS energy envelope and pacing).
 - [x] Mind screen: mood check-ins, journal, WHO-5/PHQ-9/GAD-7 with safe next
       steps (no medication advice), CBT thought records API, tap-to-call crisis

@@ -102,9 +102,9 @@ export default function VitalSignsScreen() {
     temperature: { readings: TemperatureReading[] };
     ecg: { readings: ECGReading[] };
   }>({
-    summary: '/vital-signs/summary',
-    temperature: '/vital-signs/temperature/history?limit=10',
-    ecg: '/vital-signs/ecg/history?limit=10',
+    summary: '/vitals/summary',
+    temperature: '/vitals/temperature/history?limit=10',
+    ecg: '/vitals/ecg/history?limit=10',
   });
 
   const summary = data.summary ?? null;
@@ -118,7 +118,7 @@ export default function VitalSignsScreen() {
       return;
     }
     setSaving(true);
-    const result = await postJson<{ error?: string }>('/vital-signs/temperature', {
+    const result = await postJson<{ error?: string }>('/vitals/temperature', {
       temperature_celsius: value,
       measurement_site: 'oral',
     });
