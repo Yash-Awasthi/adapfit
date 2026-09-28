@@ -57,8 +57,10 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         advice removed from pattern messages.
       - Devices/import: `apple_health_parser` (export.xml), `activity_stream_parser`
         (GPX/TCX/FIT), `garmin_data_analyzer`.
-      - Training analytics: `endurance_coaching` (CTL/ATL/TSB), `training_intensity`,
-        `cycling_analysis`, `cycling_fueling_planner`, `core_training`.
+      - [x] Training analytics: `/training/form` (fitness/fatigue/form from
+        session-RPE load, sessions without RPE excluded), `/training/intensity`,
+        `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
+      - [ ] `cycling_analysis` (climbs from GPS) waits on activity import; `core_training`.
       - Circadian: `actigraphy_analysis`, `fatigue_prediction`.
       - Nutrition: `protein_recommender`, `nutrition_validator`.
       - Insights: `quantified_self` correlations into the coach briefing.
