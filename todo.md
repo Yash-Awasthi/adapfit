@@ -48,8 +48,10 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       possible input (EEG staging, WHOOP frames), or were off-domain (a stock
       factor engine). Services: 281 at start, 201 now.
 - [ ] Wire the 18 unique ones, API and screen, grouped by where they surface:
-      - Medication: `openfda_client` (labels, recalls, adverse events),
-        `medication_safety` (Beers list prompts for 65+).
+      - [x] Medication: openFDA lookup (brand or generic, Indian names mapped)
+        and an interaction check on the screen; interaction results now give a
+        next step instead of prescriber dose advice. `medication_safety`
+        duplicated the existing Beers check and was removed.
       - Diabetes: `cgm_analyzer` (time in range, GMI from uploaded CGM readings).
       - Devices/import: `apple_health_parser` (export.xml), `activity_stream_parser`
         (GPX/TCX/FIT), `garmin_data_analyzer`.
