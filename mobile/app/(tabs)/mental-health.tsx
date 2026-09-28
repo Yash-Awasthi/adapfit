@@ -17,6 +17,7 @@ import {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 import { API_V1 as API } from '../../src/services/config';
 import { SCREEN_HEADER_TOP } from '../../src/theme/layout';
+import { authedFetch } from '../../src/services/authToken';
 // 1-10 mood value maps to a face on a filled-happy -> outline-happy -> neutral -> outline-sad -> filled-sad gradient.
 const moodFace = (value: number) =>
   value >= 8 ? 'happy' : value >= 6 ? 'happy-outline' : value === 5 ? 'remove-outline' : value >= 4 ? 'sad-outline' : 'sad';
@@ -62,7 +63,7 @@ export default function MentalHealthScreen() {
   const logMood = async () => {
     if (selectedMood === null) return;
     try {
-      await fetch(`${API}/mental-health/mood`, {
+      await authedFetch(`${API}/mental-health/mood`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mood_score: selectedMood, notes: '' }),
