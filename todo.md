@@ -13,8 +13,8 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 Only users, baselines, check-ins, workouts, workloads, coach memory and diet
 plans reach Postgres. Everything else lives in process memory and is lost on
-every deploy or restart: 55 per-user services (`app/core/per_user.py`, which
-also evicts the least recent user past 512) and module-level dicts in about 40
+every deploy or restart: 50 files with per-user services (`app/core/per_user.py`, which
+also evicts the least recent user past 512) and module-level dicts in 25
 route modules (meals, body measurements, challenges, community feed, sleep
 journal, habits, medications, mood questionnaires...). For a paid product this
 is data loss.
