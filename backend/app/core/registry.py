@@ -121,7 +121,6 @@ ROUTE_MAP = {
     "admin_api": ("/admin", ["Admin Dashboard"]),
     "telemedicine_api": ("/telemedicine", ["Telemedicine"]),
     "forums_api": ("/forums", ["Community Forums"]),
-    "analytics_dashboard_api": ("/analytics-dashboard", ["Analytics Dashboard"]),
     "vital_signs_api": ("/vitals", ["Vital Signs"]),
     "family_api": ("/family", ["Family"]),
     "calendar_api": ("/health-calendar", ["Health Calendar"]),
