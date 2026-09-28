@@ -9,6 +9,23 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
+## Phase 2a — Durable storage for every feature
+
+Only users, baselines, check-ins, workouts, workloads, coach memory and diet
+plans reach Postgres. Everything else lives in process memory and is lost on
+every deploy or restart: 55 per-user services (`app/core/per_user.py`, which
+also evicts the least recent user past 512) and module-level dicts in about 40
+route modules (meals, body measurements, challenges, community feed, sleep
+journal, habits, medications, mood questionnaires...). For a paid product this
+is data loss.
+
+- Measure exactly which state is memory-only.
+- One generic durable store (a `user_documents` table keyed by user, feature
+  and id, JSONB payload) that per-user services and route modules write through,
+  rather than a table per feature.
+- Migration path for the in-memory data that exists at switch-over.
+- Account deletion and export (Phase 3) then cover everything by construction.
+
 ## Phase 2c — Screen coverage for API-only features
 
 125 of 208 route modules have no screen calling them (measured 2026-09-28 with
