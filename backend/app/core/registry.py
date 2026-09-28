@@ -103,7 +103,6 @@ ROUTE_MAP = {
     "personalization_api": ("/personalize", ["Personalization"]),
     "chronotype_api": ("/chronotype", ["Chronotype Analysis"]),
     "illness_api": ("/illness", ["Illness Detection"]),
-    "recovery_api": ("/recovery", ["Recovery & Readiness"]),
     "wearable_api": ("/wearable", ["Wearable Import"]),
     "health_predictions_api": ("/predictions", ["Health Predictions"]),
     "blood_pressure_api": ("/blood-pressure", ["Blood Pressure"]),
@@ -229,7 +228,6 @@ ROUTE_MAP = {
     "family_network_api": ("/family-network", ["Family Network"]),
     "health_news_api": ("/health-news", ["Health News"]),
     "healthcare_providers_api": ("/providers", ["Healthcare Providers"]),
-    "recovery_v2_api": ("/recovery-v2", ["Recovery V2"]),
     "privacy_dashboard_api": ("/privacy", ["Privacy Dashboard"]),
 }
 
