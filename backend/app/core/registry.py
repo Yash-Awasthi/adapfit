@@ -114,7 +114,6 @@ ROUTE_MAP = {
     "medication_api": ("/medication", ["Medication Reminders"]),
     "emergency_api": ("/emergency", ["Emergency SOS"]),
     "workout_api": ("/workout-engine", ["Workout Engine"]),
-    "device_sync_api": ("/device-sync", ["Device Sync"]),
     "ai_coach_api": ("/ai-coach", ["AI Health Coach"]),
     "body_health_api": ("/body-health", ["Body Health"]),
     "wearable_realtime_api": ("/wearable-rt", ["Wearable Real-Time"]),

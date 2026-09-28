@@ -59,8 +59,11 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       - [x] Diabetes: CGM analyzer drives the summary (episodes, CV, GMI,
         consensus targets) with a bulk import route; insulin and medication
         advice removed from pattern messages.
-      - Devices/import: `apple_health_parser` (export.xml), `activity_stream_parser`
-        (GPX/TCX/FIT), `garmin_data_analyzer`.
+      - [x] Devices: Garmin/Strava "import" parsed files and stored nothing, and its
+        log was shared across users; imports now save workouts and nights per
+        user, deduplicated. GPX import added (defusedxml). The device "sync" button
+        wrote fixed sample readings (7200 steps, 72 bpm) as the user's data;
+        removed. Devices screen rebuilt around strap + file import.
       - [x] Training analytics: `/training/form` (fitness/fatigue/form from
         session-RPE load, sessions without RPE excluded), `/training/intensity`,
         `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
