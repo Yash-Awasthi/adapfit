@@ -28,8 +28,9 @@ Measure with `scratchpad coverage.py` (maps every mobile call to its module).
       and an unreachable eye route.
 - [ ] Stroke rehab, chronic disease, hospital at home and wound care stay API-only
       until Phase 2b designs them with clinicians.
-- [ ] Everyday Wellbeing hub: cognitive training, digital detox, ergonomics,
-      air quality and UV, peer support, goals, travel health, vaccinations.
+- [x] Everyday Wellbeing hub: live AQI/UV, desk health, a digit-span memory game
+      (real measured score), focus modes, travel health. Fixed an unreachable
+      passport route. Peer support and vaccination records left API-only.
 - [ ] Body screen: measurements, progress photos, weight goal.
 - [ ] Family screen shows a hard-coded demo family; wire `family_network`.
 - [ ] Content feed falls back to items with invented view counts and ratings.

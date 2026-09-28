@@ -9,7 +9,7 @@ import {
   ChevronRight, Sun, Moon as MoonIcon, Search, Calendar, BarChart3, Award,
   Brain, Moon, Shield, Utensils, Users, Settings as SettingsIcon,
   Download, Bell, Info, Pencil, Ruler, Droplet, Wrench,
-  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
+  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Leaf, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
   ChefHat, Droplets, Smile, Pill, Watch, CalendarDays, Siren, Accessibility,
 } from 'lucide-react-native';
 import { useTheme, AccentName, CARD_SHADOW } from '../../src/services/theme';
@@ -70,6 +70,7 @@ function buildCatalog(theme: any, showFemaleScreens: boolean): CatalogSection[] 
       items: [
         { icon: Brain, label: 'Mind', sub: 'Mood, journal & wellbeing', route: '/mental-health', color: '#A855F7' },
         { icon: Droplets, label: 'Wellness', sub: 'Hydration, breathing & meditation', route: '/wellness', color: '#06B6D4' },
+        { icon: Leaf, label: 'Everyday Wellbeing', sub: 'Air quality, desk health, memory, travel', route: '/everyday', color: '#22C55E' },
         { icon: Moon, label: 'Sleep', sub: 'Stages & consistency', route: '/sleep', color: '#6366F1' },
         { icon: Shield, label: 'Health', sub: 'Conditions & meds', route: '/health', color: '#22C55E' },
         ...(showFemaleScreens
