@@ -44,7 +44,22 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
 - [x] Sixteen mobile files called the API without the auth token; one
       `authedFetch` helper now covers them.
 - [x] Leftover duplicates: `/injury-risk-v2`, `/recommendations-v2`, `/recommend`.
-- [ ] Wire the unreachable unique services (smart alarm is done), API and screen.
+- [x] Deleted 52 unreachable services that duplicated wired features, had no
+      possible input (EEG staging, WHOOP frames), or were off-domain (a stock
+      factor engine). Services: 281 at start, 201 now.
+- [ ] Wire the 18 unique ones, API and screen, grouped by where they surface:
+      - Medication: `openfda_client` (labels, recalls, adverse events),
+        `medication_safety` (Beers list prompts for 65+).
+      - Diabetes: `cgm_analyzer` (time in range, GMI from uploaded CGM readings).
+      - Devices/import: `apple_health_parser` (export.xml), `activity_stream_parser`
+        (GPX/TCX/FIT), `garmin_data_analyzer`.
+      - Training analytics: `endurance_coaching` (CTL/ATL/TSB), `training_intensity`,
+        `cycling_analysis`, `cycling_fueling_planner`, `core_training`.
+      - Circadian: `actigraphy_analysis`, `fatigue_prediction`.
+      - Nutrition: `protein_recommender`, `nutrition_validator`.
+      - Insights: `quantified_self` correlations into the coach briefing.
+      - Vital signs: `early_warning_score` (NEWS2) as a when-to-seek-care check.
+      - Conditions: `chronic_fatigue` (ME/CFS energy envelope and pacing).
 - [x] Mind screen: mood check-ins, journal, WHO-5/PHQ-9/GAD-7 with safe next
       steps (no medication advice), CBT thought records API, tap-to-call crisis
       lines. The old screen was fake and its mood button posted to a missing route.
