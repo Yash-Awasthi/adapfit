@@ -52,7 +52,9 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         and an interaction check on the screen; interaction results now give a
         next step instead of prescriber dose advice. `medication_safety`
         duplicated the existing Beers check and was removed.
-      - Diabetes: `cgm_analyzer` (time in range, GMI from uploaded CGM readings).
+      - [x] Diabetes: CGM analyzer drives the summary (episodes, CV, GMI,
+        consensus targets) with a bulk import route; insulin and medication
+        advice removed from pattern messages.
       - Devices/import: `apple_health_parser` (export.xml), `activity_stream_parser`
         (GPX/TCX/FIT), `garmin_data_analyzer`.
       - Training analytics: `endurance_coaching` (CTL/ATL/TSB), `training_intensity`,
