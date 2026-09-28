@@ -49,8 +49,10 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       steps (no medication advice), CBT thought records API, tap-to-call crisis
       lines. The old screen was fake and its mood button posted to a missing route.
 - [ ] CBT thought records have an API but no screen yet.
-- [ ] Extend `test_no_random_measurements.py` to route modules, not just services.
-- [ ] Make route registration idempotent; one owner per prefix.
+- [x] `test_no_random_measurements.py` now sweeps route modules too; the
+      simulator is closed in production.
+- [x] Route ownership test: one module per prefix except named companions, no
+      duplicate method+path, registration repeatable.
 
 ## Phase 2b — Clinical modules built for real
 
