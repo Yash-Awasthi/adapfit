@@ -9,7 +9,7 @@ import {
   ChevronRight, Sun, Moon as MoonIcon, Search, Calendar, BarChart3, Award,
   Brain, Moon, Shield, Utensils, Users, Settings as SettingsIcon,
   Download, Bell, Info, Pencil, Ruler, Droplet, Wrench,
-  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Leaf, Scale, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
+  LayoutDashboard, CheckSquare, Stethoscope, ClipboardList, Leaf, Scale, HeartHandshake, Activity, TrendingUp, HeartPulse, Baby, MessagesSquare,
   ChefHat, Droplets, Smile, Pill, Watch, CalendarDays, Siren, Accessibility,
 } from 'lucide-react-native';
 import { useTheme, AccentName, CARD_SHADOW } from '../../src/services/theme';
@@ -102,6 +102,7 @@ function buildCatalog(theme: any, showFemaleScreens: boolean): CatalogSection[] 
     {
       title: 'Community',
       items: [
+        { icon: HeartHandshake, label: 'Family', sub: 'Private sharing with people you trust', route: '/family', color: '#EC4899' },
         { icon: Users, label: 'Community', sub: 'Challenges, leaderboard & feed', route: '/community', color: '#EC4899' },
         { icon: MessagesSquare, label: 'Forums', sub: 'Ask and answer', route: '/forums', color: '#8B5CF6' },
       ],

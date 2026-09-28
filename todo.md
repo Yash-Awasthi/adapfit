@@ -33,7 +33,9 @@ Measure with `scratchpad coverage.py` (maps every mobile call to its module).
       passport route. Peer support and vaccination records left API-only.
 - [x] Body screen: measurements, goals, on-device progress photos; trends no
       longer report the whole weight as a change when an entry lacks it.
-- [ ] Family screen shows a hard-coded demo family; wire `family_network`.
+- [x] Family screen on `family_network`: invite by email or username, per-category
+      sharing, a member view of only what was shared. In-app invites could never
+      be accepted (a token only the inviter saw); `family_mode` duplicate removed.
 - [ ] Content feed falls back to items with invented view counts and ratings.
 - [ ] Blood pressure logging in vital signs (the BP classifier has no store).
 

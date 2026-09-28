@@ -86,7 +86,6 @@ ROUTE_MAP = {
     "admin_api": ("/admin", ["Admin Dashboard"]),
     "telemedicine_api": ("/telemedicine", ["Telemedicine"]),
     "vital_signs_api": ("/vitals", ["Vital Signs"]),
-    "family_api": ("/family", ["Family"]),
     "calendar_api": ("/health-calendar", ["Health Calendar"]),
     "health_risk_api": ("/health-risk", ["Health Risk"]),
     "recipe_api": ("/recipes", ["AI Recipes"]),
