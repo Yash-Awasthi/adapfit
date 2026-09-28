@@ -64,7 +64,9 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         sleep journal's mid-sleep) on the circadian screen; the old fatigue model
         used arbitrary constants. Chronotype cards relabelled as general guidance.
       - [ ] `actigraphy_analysis` needs hourly activity from device sync (Phase 5).
-      - Nutrition: `protein_recommender`, `nutrition_validator`.
+      - [x] Nutrition: targets from profile and weight (Mifflin-St Jeor + protein
+        recommender) replace a fixed 2500 kcal/150 g for everyone; meal entries
+        whose calories disagree with their macros are flagged.
       - Insights: `quantified_self` correlations into the coach briefing.
       - Vital signs: `early_warning_score` (NEWS2) as a when-to-seek-care check.
       - Conditions: `chronic_fatigue` (ME/CFS energy envelope and pacing).
