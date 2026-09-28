@@ -37,7 +37,6 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
 - [x] Recovery: one engine (personal baseline). The dashboard scored HRV against
       population cut-offs with a second engine; it now explains the check-in score
       via `/recovery-logs/today`. Five duplicate recovery engines removed.
-- [ ] `fatigue_prediction` (Three-Process fatigue model) is unwired; belongs with sleep/circadian.
 - [x] Export: one `/export` over the real stores; `/export/all` includes every
       per-user service's state. `-v2` returned a sample export, `/data-export`
       was a second copy. Export screen saves real files.
@@ -61,7 +60,10 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         session-RPE load, sessions without RPE excluded), `/training/intensity`,
         `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
       - [ ] `cycling_analysis` (climbs from GPS) waits on activity import; `core_training`.
-      - Circadian: `actigraphy_analysis`, `fatigue_prediction`.
+      - [x] Circadian: personal alertness curve (two-process model timed by the
+        sleep journal's mid-sleep) on the circadian screen; the old fatigue model
+        used arbitrary constants. Chronotype cards relabelled as general guidance.
+      - [ ] `actigraphy_analysis` needs hourly activity from device sync (Phase 5).
       - Nutrition: `protein_recommender`, `nutrition_validator`.
       - Insights: `quantified_self` correlations into the coach briefing.
       - Vital signs: `early_warning_score` (NEWS2) as a when-to-seek-care check.
