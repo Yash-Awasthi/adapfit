@@ -111,6 +111,9 @@ async def gpx_import(body: GPXImportInput):
     points = parse_gpx_points(body.gpx)
     if len(points) < 2 or not points[0].timestamp:
         raise HTTPException(status_code=422, detail="No timed track points found in this GPX file")
+    from app.services.activity_stream_parser import haversine_distance
+    from app.services.cycling_analysis import detect_climbs
+
     kind = {"run": ActivityType.RUN, "ride": ActivityType.RIDE, "walk": ActivityType.WALK, "hike": ActivityType.HIKE}[body.activity]
     a = build_activity_from_points(points, kind)
     uid = current_user_id()
@@ -119,8 +122,15 @@ async def gpx_import(body: GPXImportInput):
         "activity_type": body.activity, "distance_km": round(a.distance / 1000, 2),
         "elevation_gain_m": round(a.elevation_gain), "avg_heart_rate": a.avg_heart_rate, "source": "gpx"})
     _log(uid, "gpx", int(ok), int(not ok))
+    cumulative, total = [0.0], 0.0
+    for p, q in zip(points, points[1:]):
+        total += haversine_distance(p.latitude, p.longitude, q.latitude, q.longitude) / 1000
+        cumulative.append(total)
+    climbs = detect_climbs(cumulative, [p.altitude for p in points])
     return {"saved": ok, "distance_km": round(a.distance / 1000, 2), "duration_minutes": round(a.duration_seconds / 60, 1),
-            "elevation_gain_m": round(a.elevation_gain)}
+            "elevation_gain_m": round(a.elevation_gain),
+            "climbs": [{"start_km": round(c.start_km, 2), "length_km": round(c.length_km, 2), "gain_m": round(c.elevation_gain_m),
+                        "avg_grade_pct": round(c.avg_grade_pct, 1), "category": c.category} for c in climbs]}
 
 
 @router.get("/status")

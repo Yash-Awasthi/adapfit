@@ -38,6 +38,9 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       (server serves `/vitals/*`), health calendar calling `/calendar/cycle/*`,
       health hub posting fixed inputs to a missing `/stress/assess` and showing
       50 as the stress level, and a dead api-client module.
+- [x] Removed seeded fake data: analytics dashboard (same generated 30 days
+      for everyone), forum posts from invented members, and `/seed-demo` is
+      closed in production.
 - [ ] Dashboard screen needs a full wiring audit (it had three dead calls).
 - [x] Recovery: one engine (personal baseline). The dashboard scored HRV against
       population cut-offs with a second engine; it now explains the check-in score
@@ -67,7 +70,8 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       - [x] Training analytics: `/training/form` (fitness/fatigue/form from
         session-RPE load, sessions without RPE excluded), `/training/intensity`,
         `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
-      - [ ] `cycling_analysis` (climbs from GPS) waits on activity import; `core_training`.
+      - [x] `cycling_analysis`: climbs detected on GPX import.
+      - [ ] `core_training` (pull-up progression) still unwired.
       - [x] Circadian: personal alertness curve (two-process model timed by the
         sleep journal's mid-sleep) on the circadian screen; the old fatigue model
         used arbitrary constants. Chronotype cards relabelled as general guidance.

@@ -40,3 +40,15 @@ def test_import_log_is_private():
     a, b = _h("log-a"), _h("log-b")
     c.post("/api/v1/wearable/gpx/import", headers=a, json={"gpx": GPX})
     assert c.get("/api/v1/wearable/status", headers=b).json()["gpx"]["imports"] == 0
+
+
+def test_a_hill_in_a_gpx_ride_is_found():
+    pts = []
+    for i in range(40):
+        ele = 900 + max(0, min(20, i - 10)) * 8
+        pts.append(f'<trkpt lat="{12.97 + i * 0.001:.4f}" lon="77.59"><ele>{ele}</ele>'
+                   f'<time>2026-08-02T06:{i:02d}:00Z</time></trkpt>')
+    gpx = ('<?xml version="1.0"?><gpx version="1.1" xmlns="http://www.topografix.com/GPX/1/1"><trk><trkseg>'
+           + "".join(pts) + "</trkseg></trk></gpx>")
+    r = c.post("/api/v1/wearable/gpx/import", headers=_h("gpx-hill"), json={"gpx": gpx, "activity": "ride"}).json()
+    assert r["climbs"] and r["climbs"][0]["gain_m"] >= 100
