@@ -1545,3 +1545,65 @@ Unsafe or wrong, found and fixed:
 Left for later phases: stroke rehab, chronic disease, hospital at home and
 wound care stay API-only until a clinician designs them; the CDSCO banned
 fixed-dose-combination list; the coach marketplace.
+
+## Part 14 — Privacy, consent and user rights (todo.md Phase 3)
+
+Measured at the start: account deletion existed only as an admin route; there
+was no consent capture anywhere (the login footer claimed agreement to
+documents that did not exist); `/export/all` and erasure skipped the 24 shared
+services that keep every user's records in one object (fertility, pregnancy,
+habits, medical passport, substance use...), and module stores keyed by record
+id (a goal's logs, a post's comments) kept a deleted user's data. Settings said
+"your data stays on your device", which was false, and its export buttons
+showed "Export ready" without saving anything. 1,040 backend tests passed.
+
+Decided with the user: deletion after a 30-minute grace period with password
+confirmation; one required consent plus three optional ones; a guardian consent
+flow for under-18s rather than an age gate; legal documents drafted with
+placeholders for the company details.
+
+- Consent (`app/core/privacy.py`): per purpose (`health_data` required; `ai`,
+  `sharing`, `analytics` optional), tied to a policy version, appended to a log
+  with time and source. `IdentityMiddleware` returns 403 with a reason while an
+  account lacks current consent, awaits a guardian, or is scheduled for
+  deletion; auth, privacy and export stay reachable. Sharing writes need
+  `sharing`. Every LLM call (chat, WebSocket chat, agent phrasing, goal parsing,
+  weekly summary, meal photos) checks `ai` and falls back to rules.
+  WebSockets now set the caller for per-user state and consent, which
+  `authenticate_websocket` never did.
+- Children: signup takes a date of birth; under 18 needs a guardian email. The
+  guardian gets a 72-hour link to a server-rendered page, declares adulthood,
+  and agrees or declines (decline erases the account). The child can withdraw
+  but not grant; analytics is never offered to a child. Mail goes over SMTP
+  (`app/core/mailer.py`). The interim identity check is a declaration;
+  DigiLocker is the upgrade path.
+- Erasure: `POST /auth/delete-account` schedules erasure; a sweep every minute
+  runs it. `durable.erase_user` now walks shared services and module stores
+  and removes anything keyed by the user id, any record with a field equal to
+  it, set membership (likes), and records keyed by the ids of removed records;
+  the in-memory storage fallback is cleared too. Signing out now clears the
+  device cache and local SQLite database; before this there was no sign-out.
+- Retention: a child account with no guardian decision is erased after 7 days;
+  an account unused for 3 years gets an email and is erased 48 hours later
+  unless the user signs in (no email, no erasure).
+- Export: `/export/all` adds the account, shared-service records and the
+  consent log.
+- Documents: privacy policy, terms and health disclaimer in
+  `backend/app/legal/`, served at `/privacy/documents/{id}` and shown in the
+  app; `docs/PRIVACY.md` holds the retention table, store declarations and
+  enforcement map.
+- Mobile: signup asks for date of birth, consent per purpose and a guardian
+  email when needed; a Privacy screen manages consent, guardian status,
+  deletion (with cancel), export and sign-out; the root layout sends a blocked
+  account there.
+
+Also fixed: meal photo logging without an AI key saved a zero-calorie "Photo
+meal"; it now refuses and asks for manual entry.
+
+Left for later phases: the security audit log is still in memory, so the
+1-year log retention in the policy is not yet met (Phase 4); `POST /users` is
+public and creates profile rows without an account, and the mobile store falls
+back to the seeded `default` identity when no user is stored (Phase 4); backup
+retention and re-applying erasures after a restore (Phase 8); filling the
+placeholders, appointing the Grievance Officer, SMTP in production and
+DigiLocker (Phase 10).

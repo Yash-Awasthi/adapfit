@@ -9,24 +9,6 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 3 — Privacy, consent and user rights
-
-Target the DPDP Act 2023 and DPDP Rules 2025 first.
-
-- Since Phase 2a all feature state is durable (`app/core/durable.py`, table
-  `feature_state`). Account deletion already erases per-user services and
-  user-keyed stores; about 50 shared services still keep each user's records
-  inside one object (medical ID, fertility, pregnancy, habits...). Deletion and
-  export must reach into those too, or they should become per-user services.
-- `/export/all` covers per-user services only; extend it the same way.
-
-- Account deletion that wipes every store (Postgres, per-user service state,
-  files, caches, backups policy).
-- Full data export in a portable format.
-- Consent capture at onboarding, versioned and timestamped.
-- Data retention rules per record type.
-- Privacy policy, terms of service, medical disclaimer, store privacy labels.
-
 ## Phase 4 — Security hardening
 
 - Token storage on device, session lifetime, refresh rotation review.
@@ -39,6 +21,11 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
   log is an in-memory list; both are lost on restart and neither belongs in the
   feature store.
 - Dependency and container scanning; third-party penetration test before launch.
+- The privacy policy promises 1-year retention of security logs; the auth
+  audit log is in memory, so move it to durable storage with that retention.
+- `POST /api/v1/users` is public and creates profile rows with no account or
+  consent; the mobile user store falls back to the seeded `default` identity
+  when nothing is stored.
 
 ## Phase 5 — Platform coverage and device data
 
@@ -86,7 +73,8 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
   loading (all three Dockerfiles now say so). Three Dockerfiles is two too many.
 - Verify `feature_state` on real Postgres: local login for `adapfit` failed with
   the password in `backend/.env` on 2026-09-28, so only SQLite was exercised.
-- Postgres backups with a tested restore.
+- Postgres backups with a tested restore. Keep backups at most 30 days (the
+  privacy policy says so) and re-run erasures requested after the backup.
 - Error tracking and crash reporting on backend and mobile.
 - Metrics, logs, uptime alerts, on-call basics.
 - CI that blocks on types, lint and mobile checks; release pipeline for EAS.
@@ -124,5 +112,9 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - Store listings, screenshots, descriptions, age ratings, review notes.
 - Health data declarations for Google Play and Apple.
 - Closed beta, feedback loop, analytics with consent.
-- Support channel, incident response, breach notification procedure.
+- Support channel, incident response, breach notification procedure (Board
+  and users without delay, full report within 72 hours; see `docs/PRIVACY.md`).
+- Fill the placeholders in `backend/app/legal/`, legal review, appoint the
+  Grievance Officer, configure SMTP, and add DigiLocker age verification for
+  guardian consent.
 - Company, legal entity, insurance and payment accounts.
