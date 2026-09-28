@@ -22,9 +22,12 @@ Measure with `scratchpad coverage.py` (maps every mobile call to its module).
 - [x] Care & Safety hub: OSM care nearby, symptom triage, first aid, check a
       forward, IDRS, Indian schemes (rewritten, PM-JAY rules corrected), notes.
 - [x] Emergency screen edits the one medical-info store; `medical_id` removed.
-- [ ] Conditions & Recovery hub: rehab, stroke rehab, senior health, chronic
-      disease, hospital at home, wound care, vision, screening, biomarkers,
-      allergies. Senior health defaults age to 70 and screening to 40.
+- [x] Conditions & Recovery hub: Indian NCD check-ups, lab results against the
+      report's own range (one shared tracker had held every user's labs), physio,
+      CDC STEADI falls check, eye care, allergies. Fixed a crash in rehab progress
+      and an unreachable eye route.
+- [ ] Stroke rehab, chronic disease, hospital at home and wound care stay API-only
+      until Phase 2b designs them with clinicians.
 - [ ] Everyday Wellbeing hub: cognitive training, digital detox, ergonomics,
       air quality and UV, peer support, goals, travel health, vaccinations.
 - [ ] Body screen: measurements, progress photos, weight goal.
