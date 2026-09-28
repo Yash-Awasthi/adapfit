@@ -1392,3 +1392,40 @@ id the mobile app never stored.
 - The endpoint and service sprawl from Part 6 phase 6 is untouched, except that
   `chronic-pain-v2` and `pregnancy-v2` were deleted — both were registered in
   the tab layout but linked from nowhere.
+
+---
+
+## Part 10 — Consolidation (todo.md Phase 2)
+
+Measured at the start: 229 route modules, 281 services, 93 services nothing
+reached, 146 route modules no screen called. At the end: 208 route modules,
+191 services, 3 unreachable (each assigned to a later phase), 1,254 backend
+tests passing, mobile typecheck clean.
+
+One implementation per feature: sleep, HRV, achievements, coach, community and
+challenges, recovery, export, injury risk and recommendations each had two to
+eleven parallel versions. The duplicates were not harmless. The recovery
+dashboard scored HRV against population thresholds while the check-in used the
+personal baseline, so the same morning had two different scores.
+
+Fabricated data found and removed along the way, beyond Part 8:
+
+- The coach's "personal" insights and health risks were canned sentences picked
+  at random, with invented numbers in them.
+- Device sync wrote fixed readings (7,200 steps, 72 bpm, 7.2 h sleep) as the
+  user's synced data; Garmin and Strava imports reported counts and stored
+  nothing.
+- The analytics dashboard served every user the same generated 30 days.
+- The forums and coach marketplace opened with invented members, testimonials,
+  credentials and reviews.
+- Nutrition targets were 2,500 kcal and 150 g protein for everyone.
+- The mental health screen showed a fixed journal and a wellbeing score of 72.
+
+Safety changes: interaction checks and diabetes patterns no longer tell users
+to change doses; PHQ-9 results no longer suggest medication; NEWS2 gained the
+single-parameter red score; sleep architecture reports patterns instead of
+naming disorders.
+
+New guards: `test_mobile_api_paths.py` (every mobile call has a route; it found
+three screens calling paths that did not exist), `test_route_ownership.py`, and
+the random-reading sweep now covers route modules.

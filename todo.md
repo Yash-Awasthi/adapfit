@@ -9,94 +9,13 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 2 — Consolidation (in progress)
+## Phase 2c — Screen coverage for API-only features
 
-Every feature stays; duplicates of the same feature merge into the best one,
-and features that exist in code but nothing calls get an API and a screen.
-Decided with the user 2026-09-28.
-
-Measured at start: 229 route modules, 281 services, 93 services unreachable
-(65 with no importer, 28 used only by tests), 146 route modules no screen calls.
-
-- [x] Sleep: one `/sleep` API and one screen (8d9aab5). Also removed the
-      unused `app/api/v1/domains/` routers and the fake `/tasks` jobs.
-- [x] HRV: one `/hrv` API over one analyzer with Lipponen artifact correction and
-      biofeedback; HRV screen reads a Bluetooth chest strap (standard 0x180D).
-- [x] Achievements: one `/achievements` derived from logged activity; the
-      self-grant XP/badge routes and the `eval()` goal parser are gone.
-- [x] Coach: `/ai-coach` briefing and weekly report built from the user's records
-      (the old one picked canned "personal" insights at random); four duplicate
-      chat surfaces removed, `/chat` is the one assistant. Briefing screen linked
-      from home and menu. Fixed two dead home-screen routes.
-- [x] Habits: streaks from completion dates (a double tap counted twice and missed
-      days never broke a streak), custom habits, an invented "87% of people"
-      statistic removed; new Habits screen.
-- [x] Removed `ai-coach-v2` (duplicate workout coach with demo videos pointing at
-      missing files) and `health-coaching` (a bookable list of invented coaches
-      with fake credentials and reviews).
-- [x] Community: `/challenges` (now with create and per-user progress) and
-      `/community` feed; `/social`, `/community-v2`, `/activity-feed` and the
-      social screen removed. Dashboard's medication, challenge and feed panels fixed.
-- [x] New test `test_mobile_api_paths.py` fails on any mobile call to a path
-      the server lacks. It found: the vital signs screen calling `/vital-signs/*`
-      (server serves `/vitals/*`), health calendar calling `/calendar/cycle/*`,
-      health hub posting fixed inputs to a missing `/stress/assess` and showing
-      50 as the stress level, and a dead api-client module.
-- [x] Removed seeded fake data: analytics dashboard (same generated 30 days
-      for everyone), forum posts from invented members, and `/seed-demo` is
-      closed in production.
-- [ ] Dashboard screen needs a full wiring audit (it had three dead calls).
-- [x] Recovery: one engine (personal baseline). The dashboard scored HRV against
-      population cut-offs with a second engine; it now explains the check-in score
-      via `/recovery-logs/today`. Five duplicate recovery engines removed.
-- [x] Export: one `/export` over the real stores; `/export/all` includes every
-      per-user service's state. `-v2` returned a sample export, `/data-export`
-      was a second copy. Export screen saves real files.
-- [x] Sixteen mobile files called the API without the auth token; one
-      `authedFetch` helper now covers them.
-- [x] Leftover duplicates: `/injury-risk-v2`, `/recommendations-v2`, `/recommend`.
-- [x] Deleted 52 unreachable services that duplicated wired features, had no
-      possible input (EEG staging, WHOOP frames), or were off-domain (a stock
-      factor engine). Services: 281 at start, 201 now.
-- [ ] Wire the 18 unique ones, API and screen, grouped by where they surface:
-      - [x] Medication: openFDA lookup (brand or generic, Indian names mapped)
-        and an interaction check on the screen; interaction results now give a
-        next step instead of prescriber dose advice. `medication_safety`
-        duplicated the existing Beers check and was removed.
-      - [x] Diabetes: CGM analyzer drives the summary (episodes, CV, GMI,
-        consensus targets) with a bulk import route; insulin and medication
-        advice removed from pattern messages.
-      - [x] Devices: Garmin/Strava "import" parsed files and stored nothing, and its
-        log was shared across users; imports now save workouts and nights per
-        user, deduplicated. GPX import added (defusedxml). The device "sync" button
-        wrote fixed sample readings (7200 steps, 72 bpm) as the user's data;
-        removed. Devices screen rebuilt around strap + file import.
-      - [x] Training analytics: `/training/form` (fitness/fatigue/form from
-        session-RPE load, sessions without RPE excluded), `/training/intensity`,
-        `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
-      - [x] `cycling_analysis`: climbs detected on GPX import.
-      - [x] Circadian: personal alertness curve (two-process model timed by the
-        sleep journal's mid-sleep) on the circadian screen; the old fatigue model
-        used arbitrary constants. Chronotype cards relabelled as general guidance.
-      - [ ] `actigraphy_analysis` needs hourly activity from device sync (Phase 5).
-      - [x] Nutrition: targets from profile and weight (Mifflin-St Jeor + protein
-        recommender) replace a fixed 2500 kcal/150 g for everyone; meal entries
-        whose calories disagree with their macros are flagged.
-      - [x] Insights: personal patterns (sleep vs next-day mood and recovery,
-        10+ paired days, only clear differences) in the briefing. `quantified_self`
-        turned out to be another logger with no correlation code; removed.
-      - [x] Vital signs: NEWS2 home check (`/vitals/check`) with the single-parameter
-        red-score rule it was missing and plain next steps.
-      - [ ] `chronic_fatigue` (ME/CFS pacing) moved to Phase 2b: it defaults age to
-        35, which sets the heart-rate ceiling.
-- [x] Mind screen: mood check-ins, journal, WHO-5/PHQ-9/GAD-7 with safe next
-      steps (no medication advice), CBT thought records API, tap-to-call crisis
-      lines. The old screen was fake and its mood button posted to a missing route.
-- [x] CBT thought records on the Mind screen.
-- [x] `test_no_random_measurements.py` now sweeps route modules too; the
-      simulator is closed in production.
-- [x] Route ownership test: one module per prefix except named companions, no
-      duplicate method+path, registration repeatable.
+125 of 208 route modules have no screen calling them (measured 2026-09-28 with
+`scratchpad routes.py`; `tests/test_mobile_api_paths.py` guards the reverse).
+Triage each: wire into an existing screen, give it a screen, fold it into a
+sibling, or delete it. Expect many to be sub-APIs of features that already
+have screens.
 
 ## Phase 2b — Clinical modules built for real
 
@@ -112,6 +31,10 @@ implementation that screens and refers without diagnosing.
 - Telemedicine: a real registered-practitioner provider, per the 2020 guidelines.
 - Medication: Indian brand names and the CDSCO drug list alongside OpenFDA.
 - Offline copies of the red-flag and first-aid content.
+- ME/CFS pacing (`chronic_fatigue`): wire with a screen; it defaults age to 35,
+  which sets the heart-rate ceiling, and uses `random`.
+- Coach marketplace: removed because every coach was invented; rebuild only with
+  verified, real practitioners (same rule as telemedicine).
 
 ## Phase 3 — Privacy, consent and user rights
 
@@ -139,6 +62,10 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - iOS project, build profile and HealthKit entitlement.
 - Health Connect and HealthKit sync actually wired and installed.
 - Wearable and BLE integrations worth keeping for launch.
+- `actigraphy_analysis` (rest-activity rhythm) once hourly activity syncs.
+- `realtime_pipeline` is only exercised by tests; decide with live streaming.
+- Health Connect sync can supply blood glucose to the CGM summary
+  (`/diabetes/glucose/import` already takes bulk readings).
 - Real-device testing of camera heart rate, pose and sensors.
 - Offline behaviour and sync conflicts.
 - Push notifications end to end.
@@ -152,6 +79,11 @@ Target the DPDP Act 2023 and DPDP Rules 2025 first.
 - LLM cost per user and quotas that keep tiers profitable.
 
 ## Phase 7 — AI and data quality
+
+- `session_load` silently assumes 45 minutes and RPE 5 when a workout omits them;
+  the training routes exclude such sessions but ACWR and the recovery engine do not.
+- Audit for constant "sample" readings returned as user data. The random-number
+  guard cannot see these (device sync and the analytics dashboard were two).
 
 - Every LLM call: purpose, prompt, safety filter, fallback, cost.
 - Health-advice guardrails and escalation wording.
