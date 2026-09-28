@@ -41,7 +41,7 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
 - [x] Export: one `/export` over the real stores; `/export/all` includes every
       per-user service's state. `-v2` returned a sample export, `/data-export`
       was a second copy. Export screen saves real files.
-- [ ] Leftover `-v2` prefixes: injury-risk, recommendations.
+- [x] Leftover duplicates: `/injury-risk-v2`, `/recommendations-v2`, `/recommend`.
 - [ ] Wire the unreachable unique services (smart alarm is done), API and screen.
 - [ ] Mental health screen: hard-coded journal and wellbeing score of 72;
       PHQ-9/GAD-7 service exists but has no route.
