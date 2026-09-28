@@ -9,13 +9,28 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 2c — Screen coverage for API-only features
+## Phase 2c — Screen coverage for API-only features (in progress)
 
-125 of 208 route modules have no screen calling them (measured 2026-09-28 with
-`scratchpad routes.py`; `tests/test_mobile_api_paths.py` guards the reverse).
-Triage each: wire into an existing screen, give it a screen, fold it into a
-sibling, or delete it. Expect many to be sub-APIs of features that already
-have screens.
+Decided with the user 2026-09-28: keep what makes the app unique or helps an
+ordinary user, delete the rest; group features without screens into hubs.
+Measure with `scratchpad coverage.py` (maps every mobile call to its module).
+
+- [x] Deleted 70 modules: gimmicks (blockchain, AR, digital twin), off-market
+      (US OSHA, US insurance, B2B), duplicates (trend engines, a second forum,
+      17 workout modules, body dashboards) and diagnosis-like "detection".
+- [x] Workouts: live set scaling in the active workout, 1RM estimate on Stats.
+- [x] Care & Safety hub: OSM care nearby, symptom triage, first aid, check a
+      forward, IDRS, Indian schemes (rewritten, PM-JAY rules corrected), notes.
+- [x] Emergency screen edits the one medical-info store; `medical_id` removed.
+- [ ] Conditions & Recovery hub: rehab, stroke rehab, senior health, chronic
+      disease, hospital at home, wound care, vision, screening, biomarkers,
+      allergies. Senior health defaults age to 70 and screening to 40.
+- [ ] Everyday Wellbeing hub: cognitive training, digital detox, ergonomics,
+      air quality and UV, peer support, goals, travel health, vaccinations.
+- [ ] Body screen: measurements, progress photos, weight goal.
+- [ ] Family screen shows a hard-coded demo family; wire `family_network`.
+- [ ] Content feed falls back to items with invented view counts and ratings.
+- [ ] Blood pressure logging in vital signs (the BP classifier has no store).
 
 ## Phase 2b — Clinical modules built for real
 
