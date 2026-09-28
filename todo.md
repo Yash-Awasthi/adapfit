@@ -28,8 +28,12 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       (the old one picked canned "personal" insights at random); four duplicate
       chat surfaces removed, `/chat` is the one assistant. Briefing screen linked
       from home and menu. Fixed two dead home-screen routes.
-- [ ] `ai-coach-v2` (workout plans, form check, demo videos that point at
-      missing assets), `health-coaching` (sample coach marketplace), `habits`.
+- [x] Habits: streaks from completion dates (a double tap counted twice and missed
+      days never broke a streak), custom habits, an invented "87% of people"
+      statistic removed; new Habits screen.
+- [x] Removed `ai-coach-v2` (duplicate workout coach with demo videos pointing at
+      missing files) and `health-coaching` (a bookable list of invented coaches
+      with fake credentials and reviews).
 - [x] Community: `/challenges` (now with create and per-user progress) and
       `/community` feed; `/social`, `/community-v2`, `/activity-feed` and the
       social screen removed. Dashboard's medication, challenge and feed panels fixed.
@@ -71,7 +75,6 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         session-RPE load, sessions without RPE excluded), `/training/intensity`,
         `/training/ride-fueling` (planner had never run: a field-name bug). On Stats.
       - [x] `cycling_analysis`: climbs detected on GPX import.
-      - [ ] `core_training` (pull-up progression) still unwired.
       - [x] Circadian: personal alertness curve (two-process model timed by the
         sleep journal's mid-sleep) on the circadian screen; the old fatigue model
         used arbitrary constants. Chronotype cards relabelled as general guidance.
@@ -84,7 +87,8 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
         turned out to be another logger with no correlation code; removed.
       - [x] Vital signs: NEWS2 home check (`/vitals/check`) with the single-parameter
         red-score rule it was missing and plain next steps.
-      - Conditions: `chronic_fatigue` (ME/CFS energy envelope and pacing).
+      - [ ] `chronic_fatigue` (ME/CFS pacing) moved to Phase 2b: it defaults age to
+        35, which sets the heart-rate ceiling.
 - [x] Mind screen: mood check-ins, journal, WHO-5/PHQ-9/GAD-7 with safe next
       steps (no medication advice), CBT thought records API, tap-to-call crisis
       lines. The old screen was fake and its mood button posted to a missing route.
