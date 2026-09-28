@@ -67,7 +67,9 @@ Measured at start: 229 route modules, 281 services, 93 services unreachable
       - [x] Nutrition: targets from profile and weight (Mifflin-St Jeor + protein
         recommender) replace a fixed 2500 kcal/150 g for everyone; meal entries
         whose calories disagree with their macros are flagged.
-      - Insights: `quantified_self` correlations into the coach briefing.
+      - [x] Insights: personal patterns (sleep vs next-day mood and recovery,
+        10+ paired days, only clear differences) in the briefing. `quantified_self`
+        turned out to be another logger with no correlation code; removed.
       - Vital signs: `early_warning_score` (NEWS2) as a when-to-seek-care check.
       - Conditions: `chronic_fatigue` (ME/CFS energy envelope and pacing).
 - [x] Mind screen: mood check-ins, journal, WHO-5/PHQ-9/GAD-7 with safe next
