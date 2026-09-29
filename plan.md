@@ -2042,3 +2042,55 @@ component" (and shows a stray "0" on screen). 187 such sites in 68 screens
 read server strings or numbers (`desc`, `next_step`, `target_rpe`,
 `encouragement`...); all now use `{!!value && ...}`, identical for booleans.
 The onboarding's "Sedentary" icon name was invalid (`-bed`).
+
+## Part 26 — Staging, the first walk on the owner's phone, and what it found
+
+**Staging.** Created with the owner's tokens through each service's API: a Neon
+project (`adapfit-staging`, Singapore), a Render web service (`adapfit-staging`,
+free plan, autodeploys the branch) and a Sentry project (`adapfit-api`).
+`https://adapfit-staging.onrender.com/health` is healthy on Neon with pgvector;
+Sentry accepts events from its DSN. The release APK now defaults to that URL.
+
+**The walk** (release APK, Realme RMX5061, fresh install): sign-up, consent,
+onboarding, check-in, workout (generate, set, rest timer, finish, feedback), run
+recording, sleep sounds and the Health Connect permission and sync all work.
+
+Findings and fixes:
+
+- The consent switches never appeared: the APK had been built without
+  `EXPO_PUBLIC_API_URL` inlined and fell back to a dead Railway host. The default
+  is now staging.
+- Chat answered a workout request with a micronutrient paragraph. Three causes:
+  the 12 s / 300-token fallback call was too small for the free reasoning models
+  (8-20 s, they spend tokens thinking); TokenHarbor answers 403 to Render's
+  datacenter IPs, and the code swallowed that; and the no-LLM fallback dumped a
+  loosely matched knowledge entry. Fixes: longer call with logged failures,
+  models tried in order, and an unclassified message takes the rule-based reply.
+- The phone now calls the model itself (`EXPO_PUBLIC_LLM_*`, key in the bundle by
+  the owner's choice): the server returns `llm_prompt`/`llm_system` for
+  `client_llm`, and screens the phone's `client_reply`. Consent and the daily
+  quota still apply on the server.
+- Home's Start workout only opened the Train tab; it now generates the day's
+  workout. Generate Workout reads the duration from the request box.
+- Strain was soreness plus fatigue, not activity: relabelled Body load. Home's
+  score bands (80/60/40) disagreed with the server's readiness states
+  (85/65/45): Home said Excellent while the workout said Moderate.
+- A 0.00 km run was saved with a pace of 458:16 /km: routes under 50 m are no
+  longer saved or given a pace.
+- Plural counts ("1 workouts"), the "Energized" label wrap, the AI consent text
+  naming only Gemini and Groq, Dev Tools shown in a release build, a fake
+  "Export started" row, header labels under the back arrow, a translucent tab
+  bar showing content through it, Privacy's Save leaving for Home.
+- Safety screening now covers Hindi (Devanagari) and Hinglish red flags with
+  Hindi safe-steps replies, and screens Hindi model output.
+- `i18n` holds en/es/fr strings but no screen calls `t()`: the app is English
+  only, and the header no longer claims ten languages.
+- Expo: SDK 56 keeps the same vulnerable transitive packages (npm's only "fix"
+  is a downgrade) and needs React Native 0.85, so it was not taken. `uuid` is
+  pinned through `overrides` (15 moderate advisories down to 4).
+- Server-side Health Connect deletion works live on staging (import 2 records,
+  delete 1, 1 left). Deletion detection on the phone was not verified: the
+  owner could not delete the phone's one steps record.
+
+`e2e/core-journey.yaml` (Maestro) drives sign-up to a finished workout on a
+device. 1,085 backend tests pass; typecheck clean.
