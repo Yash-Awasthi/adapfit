@@ -20,6 +20,7 @@ import { api } from '../../src/services/api';
 import { useUserStore } from '../../src/stores';
 import { API_V1 as API } from '../../src/services/config';
 import { authedFetch } from '../../src/services/authToken';
+import { localDay } from '../../src/utils/date';
 interface Exercise {
   exercise_id: string;
   name: string;
@@ -103,7 +104,7 @@ export default function WorkoutScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: 'default',
-          target_date: new Date().toISOString().split('T')[0],
+          target_date: localDay(),
           target_duration_minutes: 45,
         }),
       });

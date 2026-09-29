@@ -320,7 +320,8 @@ class WorkoutLogRepository:
                 user_id, days,
             )
         out = []
-        for r in _rows(rows):
+        # Oldest first, like every other history here: callers read [-1] as the latest.
+        for r in reversed(_rows(rows)):
             r = _decode_json(r, self._JSON_KEYS)
             out.append({**r["data"], "id": r["id"], "completed_at": r["completed_at"]})
         return out
@@ -349,7 +350,7 @@ class WorkloadRepository:
                 user_id, days,
             )
         out = []
-        for r in _rows(rows):
+        for r in reversed(_rows(rows)):
             r = _decode_json(r, self._JSON_KEYS)
             out.append({**r["data"], "recorded_at": r["recorded_at"]})
         return out

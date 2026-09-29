@@ -239,8 +239,8 @@ class StorageEngine:
             if user_id not in self.workload_history:
                 self.workload_history[user_id] = []
             self.workload_history[user_id].append(entry)
-            if len(self.workload_history[user_id]) > 60:
-                self.workload_history[user_id] = self.workload_history[user_id][-60:]
+            if len(self.workload_history[user_id]) > 400:
+                self.workload_history[user_id] = self.workload_history[user_id][-400:]
             await self._save()
             return entry
 

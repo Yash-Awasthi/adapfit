@@ -17,24 +17,17 @@ wellness, India first, every feature kept, nothing diagnoses.
 - Trials, restore purchases, refunds, receipts.
 - LLM cost per user and quotas that keep tiers profitable.
 
-## Phase 7 — AI and data quality
+## Phase 7 — AI and data quality (rest)
 
-- `session_load` silently assumes 45 minutes and RPE 5 when a workout omits them;
-  the training routes exclude such sessions but ACWR and the recovery engine do not.
-- Audit for constant "sample" readings returned as user data. The random-number
-  guard cannot see these (device sync and the analytics dashboard were two).
+Done in plan.md Part 18. Left:
 
-- Every LLM call: purpose, prompt, safety filter, fallback, cost.
-- Health-advice guardrails and escalation wording.
-- Score and algorithm validation against references (recovery, HRV, sleep,
-  readiness).
-- Remaining places where values are defaulted or estimated without input.
-- The home recovery ring shows 0 when there is no check-in, and the "Train, but
-  reduce intensity" advice appears with no data behind it.
 - Photo measurement of skin spots (`lesion_measure.py`) is tested on synthetic
-  images only; calibrate on real phone photos of moles with a coin.
-- Health Connect sync adds and updates records but never learns of deletions;
-  use the changes API so a record deleted on the phone leaves the server too.
+  images only; calibrate on real phone photos of moles with a coin (needs the
+  owner's photos).
+- `screen_reply` only reads English; screen replies in Hindi and other
+  languages before the app offers them.
+- Verify on a device: Health Connect deletion reaching the server, and the
+  home screen with no check-in today.
 
 ## Phase 8 — Infrastructure and operations (rest)
 

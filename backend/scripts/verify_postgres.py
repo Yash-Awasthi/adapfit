@@ -66,7 +66,7 @@ def main() -> int:
         assert bp.status_code == 201, bp.text
         print("logged a blood pressure reading (feature_state)")
 
-        decision = client.get("/api/v1/decision/today", headers=headers)
+        decision = client.get("/api/v1/decision/today?day=2026-05-07", headers=headers)
         assert decision.status_code == 200, decision.text
         assert decision.json()["user_id"] == user_id, "identity was not bound"
         print("decision:", decision.json()["decision"], "-", decision.json()["headline"])

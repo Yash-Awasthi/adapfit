@@ -12,15 +12,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../theme';
 import { getJson, asArray } from '../services/http';
 import { useUserStore } from '../stores';
+import { localDay } from '../utils/date';
 
 type DecisionName = 'TRAIN' | 'REDUCE' | 'RECOVER' | 'REST';
 
 interface DecisionPayload {
-  decision: DecisionName;
+  decision: DecisionName | null;
   headline: string;
   reasons: string[];
   cautions: string[];
-  confidence: 'low' | 'medium' | 'high';
+  confidence: 'low' | 'medium' | 'high' | null;
   intensity_ceiling_pct: number;
   safety_override: string | null;
 }
@@ -40,7 +41,7 @@ export function TodayDecision() {
   const [showWhy, setShowWhy] = useState(false);
 
   const load = useCallback(async () => {
-    const result = await getJson<DecisionPayload>(`/decision/today?user_id=${userId}`);
+    const result = await getJson<DecisionPayload>(`/decision/today?user_id=${userId}&day=${localDay()}`);
     setData(result);
     setLoading(false);
   }, [userId]);
@@ -56,7 +57,24 @@ export function TodayDecision() {
   }
   if (!data) return null;
 
-  const style = STYLE[data.decision] ?? STYLE.REDUCE;
+  if (!data.decision) {
+    return (
+      <View style={styles.card}>
+        <Text style={styles.label}>TODAY</Text>
+        <Text style={[styles.headline, { color: colors.text.primary }]}>{data.headline}</Text>
+        <TouchableOpacity
+          style={[styles.action, { backgroundColor: colors.primary }]}
+          onPress={() => router.push('/checkin' as any)}
+          accessibilityRole="button"
+        >
+          <Text style={styles.actionText}>Check in</Text>
+          <Ionicons name="arrow-forward" size={16} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const style = STYLE[data.decision];
   const reasons = asArray<string>(data.reasons);
   const cautions = asArray<string>(data.cautions);
 

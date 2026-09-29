@@ -9,6 +9,7 @@ import { useUserStore } from '../src/stores';
 import { useTheme } from '../src/services/theme';
 import { fetchHealthData, HealthBiometrics } from '../src/services/healthBridge';
 import { authedFetch } from '../src/services/authToken';
+import { localDay } from '../src/utils/date';
 
 const API = API_BASE_URL;
 
@@ -111,7 +112,7 @@ export default function CheckinScreen() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           user_id: userId,
-          log_date: new Date().toISOString().split('T')[0],
+          log_date: localDay(),
           subjective_checkin: {
             soreness,
             fatigue,

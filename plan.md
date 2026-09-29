@@ -1798,3 +1798,76 @@ four `*.check.ts` pass.
 Left: staging, Sentry DSN, uptime monitor and an LLM key need the owner's free
 accounts; remote push needs Firebase and a reason to push; iOS deferred; Expo
 upgrade past 55.
+
+## Part 18 — AI and data quality (todo.md Phase 7)
+
+Measured at the start. Training load: `session_load` assumed 45 minutes and
+RPE 5 for sessions without them; the acute:chronic ratio was an EWMA over the
+list of sessions rather than calendar days, so rest days did not count and
+the first session scored exactly 1.0; with no history `/trends/acwr`
+reported 480 over 500 ("sweet spot"). On Postgres, workout logs and workload
+history came back newest first while every caller read `[-1]` as the latest,
+so the stored ACWR and "latest workout" were the oldest ones there (memory
+mode was right, so tests passed). The LangGraph pipeline (`graph.py`,
+`orchestrator.py`, `supervisor.py`) was never called and filled HRV 70,
+sleep 70 and chronic load 500 when missing. `ml_engine` padded features with
+HRV 50, sleep 7.5, score 70 and RPE 5 and returned a "readiness prediction"
+at 50% confidence that the Trends screen showed; its fatigue forecast assumed
+200 load units a day of future training. Correlations paired logs by list
+position, not date. The server rPPG reported "HRV" from smoothed BPM windows
+and a constant signal quality of 0.8; its stress indication said "moderate"
+with no data. The stress assessment filled HRV 45, sleep 70 and mood 5 when
+missing and read HRV from a misspelt key, so the physiological part was a
+constant. Workout generation told the model "Recovery Score 75/100" when
+there was no check-in and did not check AI consent; the websocket chat's Groq
+path skipped consent too. Chat accepted a caller-supplied base URL and key in
+production. The home screen showed the most recent check-in as today's (and
+a ring reading 0 with none); the decision card said "Train, but reduce
+intensity" with no data. Seven screens stamped dates with the UTC day,
+yesterday in India before 05:30.
+
+- `workout_metrics`: RPE, duration and load return None when not recorded; a
+  plan's target duration is not a measurement. `acwr()` is the daily EWMA of
+  Williams et al. 2017 (λ = 2/(N+1), N = 7 and 28, rest days zero) and is None
+  until the first measured session is 28 days old. Workout completion, the
+  recovery check-in, `/trends/acwr`, `/trends/alerts`, chat context, the daily
+  decision, volume capacity and injury risk all use it; injury risk answers
+  "insufficient data" until then.
+- Postgres history reads return oldest first, like memory mode.
+- Deleted the unused agent pipeline, `ml_engine`'s readiness predictor,
+  feature padding, injury score and fatigue forecaster, the performance
+  predictor's unused XGBoost path, `spark_processor`, and xgboost and
+  scikit-learn from requirements. `/trends/ml-insights` reports the latest
+  check-in's readiness with its date; `/trends/fatigue-forecast` is the
+  Banister fatigue from sessions with an RPE; correlations pair by day and
+  skip missing values.
+- rPPG: HRV and breathing rate are None (they need beat intervals), quality is
+  the mean of per-frame quality, stress is "not measured", and facial fatigue
+  needs every landmark value. Stress assessment scores only the categories
+  given and refuses an empty request.
+- Home: only today's check-in counts; the ring shows a dash without one.
+  `/decision/today` and `/recovery-logs/today` take the phone's date and
+  answer "Check in to see today's plan" without today's check-in; the card
+  offers the check-in. All dates the app sends use the local day.
+- Workout generation says "No check-in for this day, so this is a standard
+  session" and tells the model no score; it needs AI consent.
+- `safety_policy.screen_reply()` drops generated sentences that diagnose or
+  change a medicine and adds who to ask; applied to chat, websocket chat, the
+  misinformation explanation, the weekly summary and the workout rationale.
+  The developer LLM override is ignored in production. `docs/LLM_CALLS.md`
+  lists every call with purpose, limits, filters, fallback and cost.
+- Health Connect deletions: the app keeps a changes token per set of granted
+  types and posts deleted record ids to `POST /device-data/delete`, which
+  also removes the CGM copy of a deleted glucose reading. The token is saved
+  only after the server accepts, so a failed upload retries.
+- The meal photo call runs off the event loop and refuses to log a meal it
+  could not read.
+- Reference tests: RMSSD and SDNN (Task Force 1996), HRV z-score, Banister
+  CTL/ATL, and ACWR behaviour (steady load near 1, spike above 1.5, rest days
+  drain the acute side).
+
+1,064 backend tests pass; typecheck clean; pip-audit clean.
+
+Left: skin-spot calibration needs the owner's photos; non-English reply
+screening; Health Connect deletion and the no-check-in home screen still to
+be seen on a device.

@@ -26,6 +26,7 @@ import { FloatingActionButton } from '../../src/components/NavigationHelpers';
 import { TodayDecision } from '../../src/components/TodayDecision';
 
 import { useApis } from '../../src/hooks/useApi';
+import { localDay } from '../../src/utils/date';
 import { asArray, asNumber, postJson } from '../../src/services/http';
 
 // ===== Greeting based on time of day =====
@@ -45,6 +46,7 @@ function getScoreLabel(score: number): string {
 }
 
 interface RecoveryLog {
+  log_date?: string;
   recovery_score?: number | null;
   hrv_rmssd?: number | null;
   resting_heart_rate?: number | null;
@@ -78,7 +80,9 @@ export default function HomeScreen() {
     hydration: '/hydration/today',
   });
 
-  const latest: RecoveryLog | null = asArray<RecoveryLog>(data.recovery?.items).slice(-1)[0] ?? null;
+  // Only today's check-in describes today; an older one would show yesterday's numbers as today's.
+  const last = asArray<RecoveryLog>(data.recovery?.items).slice(-1)[0];
+  const latest: RecoveryLog | null = last && String(last.log_date ?? '').slice(0, 10) === localDay() ? last : null;
   const healthScore = typeof latest?.recovery_score === 'number' ? Math.round(latest.recovery_score) : null;
   const bpm = typeof latest?.resting_heart_rate === 'number' ? latest.resting_heart_rate : null;
   const sleepScore = typeof latest?.sleep_score === 'number' ? Math.round(latest.sleep_score) : null;
@@ -152,7 +156,7 @@ export default function HomeScreen() {
           {/* Health Score Ring */}
           <View style={styles.heroScoreRow}>
             <ScoreRing
-              score={healthScore ?? 0}
+              score={healthScore}
               size={110}
               strokeWidth={8}
               color="#FFF"

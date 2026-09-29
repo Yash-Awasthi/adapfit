@@ -11,9 +11,10 @@ import { colors, spacing } from '../../src/theme';
 import { GlassCard } from '../../src/components/PremiumComponents';
 import { asArray, getJson, postJson, putJson } from '../../src/services/http';
 import { useUserStore } from '../../src/stores';
+import { localDay } from '../../src/utils/date';
 
 const TINT = '#0EA5E9';
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDay();
 
 function Section({ icon, title, sub, children }: { icon: string; title: string; sub: string; children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
