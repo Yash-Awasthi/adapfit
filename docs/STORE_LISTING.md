@@ -53,19 +53,20 @@ Items in [brackets] are the owner's.
 ## Content rating (IARC questionnaire)
 
 - No violence, sexual content, gambling or controlled substances promoted.
-- User-generated content: yes (community posts, forums). Google Play's
-  user-generated content policy needs in-app reporting and blocking, which
-  the app does not have yet (todo.md Phase 10).
+- User-generated content: yes (community posts, forums). Every post and
+  reply has "Report" (spam, abusive, harmful health advice) and "Block
+  author". A report hides the post from the reporter at once and from
+  everyone after three reports; reports are in the security audit log
+  [name who reviews them].
 - Shares location: only a recorded run's route, uploaded to the user's own
   account.
 - Expected rating: Everyone / 3+ [confirm on submission].
 
 ## Target audience
 
-[Decide: 13+ or 18+.] Under 18 needs a guardian's consent before data is
-stored (DPDP Act); the app asks for date of birth at sign-up but sets no lower
-age limit. Listing for under-13s would bring Google Play's Families policy, so
-a 13+ target should come with a sign-up minimum of 13.
+[Decide: 13+ or 18+.] Sign-up refuses anyone under 13, which keeps the app
+out of Google Play's Families policy. Under 18 needs a guardian's consent
+before data is stored (DPDP Act).
 
 ## App access for review
 

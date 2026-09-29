@@ -2009,3 +2009,14 @@ without `SYSTEM_ALERT_WINDOW`. Two fixes were needed:
 
 Not yet done: installing it on the owner's phone and walking the journey
 there (needs the owner present).
+
+## Part 23 — Report, block and a minimum age
+
+Google Play requires reporting and blocking wherever users post. Community
+and forum posts and replies now have a "Report or block" action: a report
+(spam, abusive, harmful health advice) hides the post from the reporter at
+once, is written to the security audit log, and hides the post from everyone
+after three reports; a reported reply is hidden from its reporter. Blocking
+hides everything the author posts or replies, for the blocker only. Sign-up
+refuses anyone under 13 (Play's Families policy would otherwise apply); 13 to
+17 still need a guardian. 1,077 backend tests pass; typecheck clean.

@@ -17,6 +17,7 @@ import { colors, spacing, radius } from '../../src/theme';
 import { GlassCard } from '../../src/components/PremiumComponents';
 import { useApis } from '../../src/hooks/useApi';
 import { postJson, asArray } from '../../src/services/http';
+import { openModeration } from '../../src/services/moderation';
 import { useUserStore } from '../../src/stores';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -275,6 +276,12 @@ export default function CommunityScreen() {
                     </Text>
                     <Text style={styles.feedTime}>{timeAgo(share.shared_at)}</Text>
                   </View>
+                  {share.user_id !== userId && (
+                    <TouchableOpacity hitSlop={12} accessibilityRole="button" accessibilityLabel="Report or block"
+                      onPress={() => openModeration({ shareId: share.id, authorId: share.user_id, authorName: share.user_name, userId }, reload)}>
+                      <Ionicons name="ellipsis-horizontal" size={20} color={colors.text.muted} />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 <Text style={styles.feedTitle}>{share.title}</Text>
                 {share.caption ? <Text style={styles.feedCaption}>{share.caption}</Text> : null}

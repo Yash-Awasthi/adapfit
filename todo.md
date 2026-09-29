@@ -68,9 +68,9 @@ Done in plan.md Part 21: prohibited-FDC check in the medicine lookup, store
 listing and Health Connect declaration drafts, legal placeholders flagged.
 Left:
 
-- Code: in-app report and block for community and forum posts (Google Play's
-  user-generated content policy); a sign-up minimum age matching the chosen
-  Play target audience.
+- Owner: who reviews community reports (they land in the security audit log
+  as `community_report`); choose the Play target audience (sign-up already
+  refuses under-13s).
 - Owner: company and legal entity, insurance, payment accounts; legal review
   of third-party data (Indian Medicine Dataset, NMC register search) and of
   `backend/app/legal/` with the `[...]` placeholders filled; appoint the
