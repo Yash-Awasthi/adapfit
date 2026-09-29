@@ -2094,3 +2094,11 @@ Findings and fixes:
 
 `e2e/core-journey.yaml` (Maestro) drives sign-up to a finished workout on a
 device. 1,085 backend tests pass; typecheck clean.
+
+A sweep of all 437 read endpoints on staging (410 normal, the rest expected
+refusals or needing real ids) found two faults, both fixed: `modules-health/health`
+returned 500 (its return type rejected its own nested response), and
+`voice/prompts` was a GET that required a request body. `docs/FEATURE_STATUS.md`
+lists every feature with how it was checked. Onboarding now asks each question
+once: the welcome screen is gone and the profile is created at the end using the
+sign-up name. 1,088 backend tests pass.
