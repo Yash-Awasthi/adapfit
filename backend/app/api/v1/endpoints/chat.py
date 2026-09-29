@@ -377,7 +377,8 @@ async def chat(request: Request, req: ChatRequest):
 
     reply = screen_reply(reply)
     if not reply:
-        if knowledge:
+        # An unclassified message only loosely matches a knowledge entry; a dump of it reads as an answer to something else.
+        if knowledge and primary_intent != "default":
             reply = " ".join(f"{k['content']} (source: {k['source']})" for k in knowledge)
         else:
             reply, _ = _rule_based_reply(req.message, context, primary_intent)
