@@ -50,6 +50,10 @@ class ChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     history: List[ChatMessage] = []
     llm_override: Optional[LlmOverride] = None
+    # The phone calls the language model itself (some providers refuse datacenter IPs): with client_llm the
+    # reply carries llm_prompt and llm_system; the phone sends its answer back as client_reply to be screened.
+    client_llm: bool = False
+    client_reply: Optional[str] = Field(default=None, max_length=8000)
 
 
 class ChatResponse(BaseModel):
@@ -62,6 +66,8 @@ class ChatResponse(BaseModel):
     follow_up_suggestions: Optional[List[str]] = None
     action: Optional[Dict[str, Any]] = None
     safety: Optional[Dict[str, Any]] = None
+    llm_prompt: Optional[str] = None
+    llm_system: Optional[str] = None
 
 
 async def _call_gemini(prompt: str, history: List[dict], system: str = "", api_key: Optional[str] = None, model: Optional[str] = None) -> Optional[str]:
@@ -121,27 +127,23 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
-    payload = {
-        "model": model or settings.GROQ_MODEL,
-        "messages": messages,
-        "temperature": 0.7,
-        "max_tokens": 900,
-    }
-
-    try:
-        async with httpx.AsyncClient(timeout=45.0) as client:
-            resp = await client.post(
-                url, json=payload,
-                headers={"Authorization": f"Bearer {key}"}
-            )
-            if resp.status_code == 200:
-                text = resp.json()["choices"][0]["message"]["content"]
-                if not text:
-                    logger.warning("Fallback LLM returned no text (model spent its budget thinking?)")
-                return text or None
-            logger.warning("Fallback LLM call failed: %s %s", resp.status_code, resp.text[:300])
-    except Exception as exc:
-        logger.warning("Fallback LLM call raised: %r", exc)
+    models = [model] if model else [settings.GROQ_MODEL, *filter(None, (m.strip() for m in settings.GROQ_FALLBACK_MODELS.split(",")))]
+    async with httpx.AsyncClient(timeout=45.0) as client:
+        for name in models:
+            try:
+                resp = await client.post(
+                    url, headers={"Authorization": f"Bearer {key}"},
+                    json={"model": name, "messages": messages, "temperature": 0.7, "max_tokens": 900},
+                )
+                if resp.status_code == 200:
+                    text = resp.json()["choices"][0]["message"]["content"]
+                    if text:
+                        return text
+                    logger.warning("Fallback LLM %s returned no text (spent its budget thinking?)", name)
+                else:
+                    logger.warning("Fallback LLM %s failed: %s %s", name, resp.status_code, resp.text[:200])
+            except Exception as exc:
+                logger.warning("Fallback LLM %s raised: %r", name, exc)
     return None
 
 
@@ -356,7 +358,11 @@ async def chat(request: Request, req: ChatRequest):
     #    Otherwise try server defaults in order: Gemini → Groq → Rule-based.
     reply = None
     llm_source = None
-    if req.llm_override and settings.ENVIRONMENT != "production":
+    if req.client_reply is not None:
+        reply, llm_source = req.client_reply, "client"
+    elif req.client_llm and ai_call_allowed():
+        return ChatResponse(reply="", intent=primary_intent, llm_prompt=full_prompt, llm_system=system_prompt)
+    elif req.llm_override and settings.ENVIRONMENT != "production":
         # Developer tool only: in production the server never calls a URL or key the caller supplies.
         ov = req.llm_override
         override_system = coach_prompts.MINIMAL_SYSTEM

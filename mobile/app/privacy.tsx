@@ -55,7 +55,7 @@ export default function PrivacyScreen() {
 
   const saveConsent = () => run(async () => {
     const next = await setConsent(draft);
-    if (!isBlocked(next)) router.replace('/(tabs)');
+    if (!isBlocked(next)) (router.canGoBack() ? router.back() : router.replace('/(tabs)'));
   });
 
   const confirmDeletion = () => {

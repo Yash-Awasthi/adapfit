@@ -51,3 +51,13 @@ def test_chat_endpoint_short_circuits_on_a_red_flag():
     body = resp.json()
     assert body["safety"]["category"] == "medical_emergency"
     assert "112" in body["reply"]
+
+
+def test_client_llm_hands_back_a_prompt_then_screens_the_phones_reply():
+    client = TestClient(app)
+    ask = client.post("/api/v1/chat", json={"user_id": "u1", "message": "how do I warm up", "client_llm": True}).json()
+    assert ask["llm_prompt"] and ask["llm_system"] and ask["reply"] == ""
+    done = client.post("/api/v1/chat", json={
+        "user_id": "u1", "message": "how do I warm up", "client_reply": "Five minutes of easy cardio, then mobility.",
+    }).json()
+    assert done["reply"].startswith("Five minutes") and not done["llm_prompt"]

@@ -54,7 +54,7 @@ Every synced type appears in the user's daily summary on the Devices screen
   account (Privacy, Delete account); erasure also reaches backups (restore
   replays erasures).
 - Shared with third parties: AI features send the user's message and the
-  records it needs to Google Gemini or Groq, only with the user's AI consent.
+  records it needs to an AI provider (Google Gemini, Groq or TokenHarbor), only with the user's AI consent.
   Crash reports (if enabled) exclude request bodies, headers and query strings.
 
 ## Reviewer notes

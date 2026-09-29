@@ -45,7 +45,7 @@ PURPOSES: Dict[str, dict] = {
     "ai": {
         "required": False,
         "title": "AI features",
-        "detail": "Your message and the records it needs are sent to Google Gemini or Groq to write coach "
+        "detail": "Your message and the records it needs are sent to an AI provider (Google Gemini, Groq or TokenHarbor) to write coach "
                   "replies, read meal photos and parse goals. Without this the app uses its built-in rules.",
     },
     "sharing": {

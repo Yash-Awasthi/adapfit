@@ -124,7 +124,7 @@ export default function HomeScreen() {
     { icon: 'moon', value: sleepScore ?? '--', label: 'Sleep', color: colors.health.sleep },
     { icon: 'flame', value: calories !== null ? calories.toLocaleString() : '--', label: 'Calories', color: colors.health.energy },
     { icon: 'water', value: `${waterIntake}/${glassesTarget}`, label: 'Water', color: '#3B82F6' },
-    { icon: 'leaf', value: strain ?? '--', label: 'Strain', color: colors.health.calm },
+    { icon: 'leaf', value: strain ?? '--', label: 'Body load', color: colors.health.calm },
   ];
 
   return (
