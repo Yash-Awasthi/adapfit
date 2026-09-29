@@ -133,10 +133,10 @@ export default function RunRecordScreen() {
           <Text style={s.big}>{result.stats.distance_km.toFixed(2)}<Text style={s.unit}> km</Text></Text>
           <View style={s.row}>
             <View style={s.cell}><Text style={s.value}>{clock(result.stats.duration_seconds)}</Text><Text style={s.label}>Time</Text></View>
-            <View style={s.cell}><Text style={s.value}>{pace(result.stats.avg_pace_seconds_per_km)}</Text><Text style={s.label}>Average pace</Text></View>
+            <View style={s.cell}><Text style={s.value}>{pace(result.stats.distance_km >= 0.05 ? result.stats.avg_pace_seconds_per_km : 0)}</Text><Text style={s.label}>Average pace</Text></View>
             <View style={s.cell}><Text style={s.value}>{Math.round(result.stats.elevation_gain_m)} m</Text><Text style={s.label}>Climb</Text></View>
           </View>
-          <Text style={s.note}>{result.saved_to_history ? 'Saved to your workout history.' : 'Too few good GPS fixes to save a route.'}</Text>
+          <Text style={s.note}>{result.saved_to_history ? 'Saved to your workout history.' : 'Too short to save: under 50 m, or too few good GPS fixes.'}</Text>
         </View>
       )}
 

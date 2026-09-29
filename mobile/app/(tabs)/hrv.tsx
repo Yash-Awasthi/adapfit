@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 100 },
   hero: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   heroValue: { color: '#fff', fontSize: 34, fontWeight: '800', marginTop: 6 },
-  heroMuted: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
+  heroMuted: { paddingLeft: 40, color: 'rgba(255,255,255,0.8)', fontSize: 13 },
   section: { paddingHorizontal: spacing.screenPadding, marginTop: spacing.xl },
   bars: { flexDirection: 'row', alignItems: 'flex-end', height: 96, gap: 4 },
   barCol: { flex: 1, justifyContent: 'flex-end' },

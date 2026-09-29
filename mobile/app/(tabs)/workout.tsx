@@ -22,6 +22,7 @@ import { API_V1 as API } from '../../src/services/config';
 import { authedFetch } from '../../src/services/authToken';
 import { localDay } from '../../src/utils/date';
 import { postJson } from '../../src/services/http';
+import { plural } from '../../src/utils/plural';
 interface Exercise {
   exercise_id: string;
   name: string;
@@ -146,7 +147,7 @@ export default function WorkoutScreen() {
           </View>
           <View style={styles.workoutCount}>
             <Text style={styles.workoutCountNumber} {...fitText(1)}>{workouts.length}</Text>
-            <Text style={styles.workoutCountLabel}>sessions</Text>
+            <Text style={styles.workoutCountLabel}>{workouts.length === 1 ? 'session' : 'sessions'}</Text>
           </View>
         </View>
       </LinearGradient>
@@ -254,7 +255,7 @@ export default function WorkoutScreen() {
         icon="list"
         iconColor={colors.primary}
         title="Recent Workouts"
-        subtitle={`${filteredWorkouts.length} workouts`}
+        subtitle={plural(filteredWorkouts.length, 'workout')}
       />
 
       {filteredWorkouts.length === 0 ? (

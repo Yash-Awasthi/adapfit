@@ -38,10 +38,11 @@ const getGreeting = () => {
   return { text: 'Good night', icon: 'moon', gradient: ['#2A2A5E', '#312E81'] };
 };
 
+// Same cut-offs as the server's readiness states (85 optimal, 65 moderate, 45 reduced), so Home and the workout agree.
 function getScoreLabel(score: number): string {
-  if (score >= 80) return 'Excellent';
-  if (score >= 60) return 'Good';
-  if (score >= 40) return 'Fair';
+  if (score >= 85) return 'Excellent';
+  if (score >= 65) return 'Good';
+  if (score >= 45) return 'Fair';
   return 'Needs Work';
 }
 
@@ -169,8 +170,8 @@ export default function HomeScreen() {
               <Text style={styles.heroScoreSubtitle}>
                 {healthScore === null
                   ? 'Check in this morning to see where you stand'
-                  : healthScore >= 80 ? "You're recovered — make it count"
-                  : healthScore >= 60 ? 'Solid. Train as planned'
+                  : healthScore >= 85 ? "You're recovered — make it count"
+                  : healthScore >= 65 ? 'Solid. Train as planned'
                   : 'Take it easy today'}
               </Text>
               <View style={styles.heroScoreBreakdown}>

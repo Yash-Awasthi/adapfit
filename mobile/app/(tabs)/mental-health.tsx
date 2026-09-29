@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
   hero: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   heroRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginTop: 12 },
   heroValue: { color: '#fff', fontSize: 30, fontWeight: '800' },
-  heroMuted: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
+  heroMuted: { paddingLeft: 40, color: 'rgba(255,255,255,0.8)', fontSize: 13 },
   heroCta: { width: 112, height: 112, borderRadius: 56, borderWidth: 2, borderColor: 'rgba(255,255,255,0.6)', alignItems: 'center', justifyContent: 'center', padding: 8 },
   heroCtaText: { color: '#fff', fontSize: 12, fontWeight: '700', textAlign: 'center', marginTop: 4 },
   section: { paddingHorizontal: spacing.screenPadding, marginTop: spacing.xl },

@@ -159,7 +159,7 @@ export default function BodyScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.deep },
   hero: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  heroMuted: { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 4 },
+  heroMuted: { paddingLeft: 40, color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 4 },
   heroTitle: { color: '#fff', fontSize: 26, fontWeight: '800', marginTop: 6 },
   section: { paddingHorizontal: spacing.screenPadding, marginTop: spacing.xl },
   input: { backgroundColor: colors.bg.card, borderRadius: 12, padding: 12, color: colors.text.primary, borderWidth: 1, borderColor: colors.surface.border, marginTop: 8 },

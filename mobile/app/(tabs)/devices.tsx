@@ -17,6 +17,7 @@ import {
   HealthConnectState, healthConnectState, grantedTypes, requestHealthAccess, syncHealthConnect, openHealthConnectSettings,
   HC_RECORD_TYPES,
 } from '../../src/services/healthConnect';
+import { plural } from '../../src/utils/plural';
 
 const TINT = '#64748B';
 
@@ -101,7 +102,7 @@ function HealthConnectCard() {
       <Text style={styles.title}>Health Connect</Text>
       <Text style={styles.sub}>
         {granted ? `Reading ${granted} of ${HC_RECORD_TYPES.length} data types.` : 'Steps, sleep, heart rate, HRV, weight, glucose, blood pressure, SpO2, temperature, food and cycle from your watch, scale and other apps.'}
-        {server?.last_sync ? ` Last sync ${new Date(server.last_sync * 1000).toLocaleString()} · ${total} records stored.` : ''}
+        {server?.last_sync ? ` Last sync ${new Date(server.last_sync * 1000).toLocaleString()} · ${plural(total, 'record')} stored.` : ''}
       </Text>
       <View style={styles.buttons}>
         {granted ? (
@@ -182,7 +183,7 @@ export default function DevicesScreen() {
     setBusy(null);
     if (!r) return Alert.alert('Not imported', 'The file could not be read.');
     const nights = r.nights_saved ? `, ${r.nights_saved} nights` : '';
-    Alert.alert('Imported', `${r.workouts_saved ?? 0} workouts${nights}. ${r.skipped_duplicates ?? 0} already imported.`);
+    Alert.alert('Imported', `${plural(r.workouts_saved ?? 0, 'workout')}${nights}. ${r.skipped_duplicates ?? 0} already imported.`);
     load();
   };
 
@@ -235,7 +236,7 @@ export default function DevicesScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.deep },
   hero: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
-  heroMuted: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
+  heroMuted: { paddingLeft: 40, color: 'rgba(255,255,255,0.8)', fontSize: 13 },
   heroTitle: { color: '#fff', fontSize: 26, fontWeight: '800', marginTop: 6 },
   section: { paddingHorizontal: spacing.screenPadding, marginTop: spacing.xl },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 10 },
