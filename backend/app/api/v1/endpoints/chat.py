@@ -114,7 +114,7 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
     if not key or not ai_call_allowed():
         return None
 
-    url = "https://api.groq.com/openai/v1/chat/completions"
+    url = f"{settings.GROQ_BASE_URL}/chat/completions"
     messages = []
     if system:
         messages.append({"role": "system", "content": system})
