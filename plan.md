@@ -1962,3 +1962,30 @@ takes its existing fallback; the chat tells the user their AI replies return
 tomorrow. `docs/LLM_CALLS.md` gives the token sizes behind the cap.
 
 1,068 backend tests pass.
+
+## Part 21 — Launch readiness, code parts (todo.md Phase 10)
+
+- Prohibited fixed dose combinations: `scripts/build_cdsco_fdc.py` downloads
+  four government sources (CDSCO list as on 22.11.2021 with its court-status
+  footnotes, Lok Sabha USQ 2632 for the 2023 notifications, Goa FDA's copy of
+  the 02.08.2024 notifications, PIB release 2275595 for 20.06.2026) and writes
+  609 combinations to `app/data/cdsco_prohibited_fdc.tsv`, each with its
+  notification number and status (prohibited, under review after the
+  Supreme Court order, quashed by the Delhi High Court, stayed).
+  `app/services/banned_fdc.py` matches a product's exact ingredient set and,
+  where the listing names a form (SR, injection, suspension, dispersible,
+  syrup...), requires the product's name to show it: the first version
+  flagged ordinary Aceclofenac + Paracetamol tablets, when only the SR form is
+  banned. Strength-specific listings are skipped. Every medicine search
+  result carries the finding; the medication screen shows it with "ask your
+  doctor or pharmacist", never "stop taking".
+- `docs/STORE_LISTING.md` and `docs/HEALTH_CONNECT_DECLARATION.md`: wellness
+  wording, per-permission purposes, data safety answers, reviewer notes, with
+  the owner's items in brackets. Writing the declaration showed that most
+  synced Health Connect types were stored but shown nowhere, which Play
+  rejects; the Devices screen now lists the last 7 days of every synced type.
+  It also showed that community and forum posts have no report or block,
+  which Play requires (left in todo.md).
+- Legal: the terms say the app is free and takes no payment; production
+  startup warns while `[COMPANY LEGAL NAME]` placeholders remain.
+1,074 backend tests pass.

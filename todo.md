@@ -62,19 +62,23 @@ Done in plan.md Part 19. Left:
 - Localisation completeness; performance and app size; end-to-end tests for
   the core journeys (the adb walk in Part 19 is manual).
 
-## Phase 10 — Launch readiness
+## Phase 10 — Launch readiness (rest)
 
-- Legal review of third-party data: the Indian Medicine Dataset (MIT, but
-  scraped retail listings) and use of the NMC register search.
-- Add the CDSCO list of banned fixed-dose combinations to the medicine check.
+Done in plan.md Part 21: prohibited-FDC check in the medicine lookup, store
+listing and Health Connect declaration drafts, legal placeholders flagged.
+Left:
 
-- Third-party penetration test.
-- Store listings, screenshots, descriptions, age ratings, review notes.
-- Health data declarations for Google Play and Apple.
-- Closed beta, feedback loop, analytics with consent.
-- Support channel, incident response, breach notification procedure (Board
-  and users without delay, full report within 72 hours; see `docs/PRIVACY.md`).
-- Fill the placeholders in `backend/app/legal/`, legal review, appoint the
-  Grievance Officer, configure SMTP, and add DigiLocker age verification for
-  guardian consent.
-- Company, legal entity, insurance and payment accounts.
+- Code: in-app report and block for community and forum posts (Google Play's
+  user-generated content policy); a sign-up minimum age matching the chosen
+  Play target audience.
+- Owner: company and legal entity, insurance, payment accounts; legal review
+  of third-party data (Indian Medicine Dataset, NMC register search) and of
+  `backend/app/legal/` with the `[...]` placeholders filled; appoint the
+  Grievance Officer; SMTP; DigiLocker age verification for guardian consent;
+  third-party penetration test; closed beta and feedback loop; support
+  channel, incident response and breach notification procedure; store
+  graphics, screenshots and the answers marked `[...]` in
+  `docs/STORE_LISTING.md` and `docs/HEALTH_CONNECT_DECLARATION.md`.
+- Re-run `python -m scripts.build_cdsco_fdc` when a new 26A notification is
+  published; the 2024 list comes from Goa FDA's copy until CDSCO publishes a
+  consolidated one.
