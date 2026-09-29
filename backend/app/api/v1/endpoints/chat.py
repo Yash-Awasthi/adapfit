@@ -14,7 +14,6 @@ from app.core.limiter import make_limiter
 from app.core.config import settings
 from app.core.gemini import DEFAULT_MODEL, extract_text, gemini_endpoint
 from app.core.storage import storage
-from app.core.privacy import allowed
 from app.services.nlp_pipeline import nlp_pipeline
 from app.services.recovery_engine import RecoveryEngine
 from app.services.intent_classifier import intent_classifier, entity_extractor
@@ -26,6 +25,8 @@ from app.services.nl_workout_logger import nl_workout_logger
 from app.services.conversational_memory import conversational_memory
 from app.services.learning_loop import learning_loop
 from app.core.workout_metrics import HISTORY_ENTRIES, acwr_ratio, session_rpe
+from app.core import llm_quota
+from app.core.llm_quota import ai_call_allowed
 
 router = APIRouter()
 limiter = make_limiter()
@@ -66,7 +67,7 @@ class ChatResponse(BaseModel):
 async def _call_gemini(prompt: str, history: List[dict], system: str = "", api_key: Optional[str] = None, model: Optional[str] = None) -> Optional[str]:
     """Call Google Gemini API for chat response."""
     key = api_key or settings.GEMINI_API_KEY
-    if not key or not allowed("ai"):
+    if not key or not ai_call_allowed():
         return None
 
     url, headers = gemini_endpoint(key, model or DEFAULT_MODEL)
@@ -110,7 +111,7 @@ async def _call_gemini(prompt: str, history: List[dict], system: str = "", api_k
 async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = None, model: Optional[str] = None) -> Optional[str]:
     """Fallback to Groq Llama model when Gemini is unavailable."""
     key = api_key or settings.GROQ_API_KEY
-    if not key or not allowed("ai"):
+    if not key or not ai_call_allowed():
         return None
 
     url = "https://api.groq.com/openai/v1/chat/completions"
@@ -141,7 +142,7 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
 
 async def _call_custom(prompt: str, system: str = "", api_key: str = "", base_url: str = "", model: str = "") -> Optional[str]:
     """Call a user-supplied OpenAI-compatible endpoint (local LLM, proxy, etc)."""
-    if not api_key or not base_url or not allowed("ai"):
+    if not api_key or not base_url or not ai_call_allowed():
         return None
 
     messages = []
@@ -376,6 +377,9 @@ async def chat(request: Request, req: ChatRequest):
         else:
             reply, _ = _rule_based_reply(req.message, context, primary_intent)
         llm_source = "rule_based"
+        if llm_quota.remaining() <= 0:
+            reply += ("\n\nYou've used today's AI coach replies, so this answer comes from the built-in guide. "
+                      "Full replies return tomorrow.")
 
     # 9. NLP side-effects: pain detection
     nlp_result = nlp_pipeline.extract_exercise_feedback(req.message)

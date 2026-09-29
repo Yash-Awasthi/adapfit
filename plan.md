@@ -1946,3 +1946,19 @@ no render error; token refresh after expiry; the run relaunch case above.
 Left: phone checks (camera heart rate, BLE strap, Health Connect deletion),
 the dev-only text console error, onboarding depth, localisation, and
 automated end-to-end tests.
+
+## Part 20 — Monetisation (todo.md Phase 6)
+
+Decided with the owner: every feature free at launch, no paid tiers yet, no
+Play Console yet. Entitlements and store billing would gate nothing, so they
+are not built; they wait for prices.
+
+What free use needs is a bound on the one variable cost, the language
+models. `app/core/llm_quota.py`: every call site now asks
+`ai_call_allowed()`, which is the AI consent check plus one unit of the
+account's daily allowance (`LLM_DAILY_CALLS`, default 60, stored in feature
+state so a restart does not reset it, UTC days). Over the cap each call site
+takes its existing fallback; the chat tells the user their AI replies return
+tomorrow. `docs/LLM_CALLS.md` gives the token sizes behind the cap.
+
+1,068 backend tests pass.

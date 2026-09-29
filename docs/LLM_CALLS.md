@@ -12,8 +12,9 @@ every call below takes its fallback and nothing leaves the server.
 
 Rules shared by all calls:
 
-- **Consent.** No call runs unless the account has granted the `ai` purpose
-  (and `health_data`), checked with `privacy.allowed("ai")`. The websocket chat
+- **Consent and quota.** No call runs unless the account has granted the `ai`
+  purpose (and `health_data`) and has calls left today, checked with
+  `llm_quota.ai_call_allowed()`. The websocket chat
   has no request context and checks the account explicitly.
 - **Input triage.** Chat, websocket chat and the misinformation check run the
   user's text through `safety_policy.triage()` first. Chest pain, stroke signs,
@@ -52,8 +53,10 @@ context block, up to 600 tokens of knowledge-base text, 10 prior turns) and
 returns at most 1,024. A workout generation is about 400 in and 800 out. A
 meal photo is one image plus about 150 tokens. Both providers' free tiers cover
 testing and a closed beta; at scale the bill is set by the provider's price
-per million tokens at the time, times the per-user daily quota
-(`docs/PRODUCT_SCOPE.md`, Phase 6).
+per million tokens at the time. Each account may make `LLM_DAILY_CALLS` model
+calls a day (default 60, `backend/app/core/llm_quota.py`); after that every
+call site uses its fallback and the chat says so. That caps the worst case at
+about 60 × 3,500 tokens per active user per day.
 
 ## Known limits
 

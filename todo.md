@@ -9,13 +9,13 @@ wellness, India first, every feature kept, nothing diagnoses.
 
 ---
 
-## Phase 6 — Monetisation
+## Phase 6 — Monetisation (rest)
 
-- Subscription model and pricing tiers.
-- In-app purchase integration for both stores.
-- Server-side entitlements and feature gating.
-- Trials, restore purchases, refunds, receipts.
-- LLM cost per user and quotas that keep tiers profitable.
+Decided 2026-09-29: every feature free at launch. Done in plan.md Part 20:
+the per-account daily AI quota. Left for when paid tiers are wanted (owner's
+decisions): tiers, INR prices, trial length, what stays free; a Play Console
+and payments profile; then server-side entitlements, Google Play Billing,
+restore purchases, refunds and receipts.
 
 ## Phase 7 — AI and data quality (rest)
 

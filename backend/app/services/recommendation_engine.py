@@ -3,7 +3,6 @@ import uuid
 import httpx
 from typing import Optional, Dict, Any, List
 from app.core.config import settings
-from app.core.privacy import allowed
 from app.services.safety_policy import screen_reply
 from app.models.schemas import (
     WorkoutGenerateRequest,
@@ -14,6 +13,7 @@ from app.models.schemas import (
 )
 from app.services.exercise_service import exercise_service
 from app.core.gemini import gemini_endpoint
+from app.core.llm_quota import ai_call_allowed
 
 class RecommendationEngine:
     """
@@ -38,7 +38,7 @@ class RecommendationEngine:
         eq = equipment_access or ["bodyweight", "dumbbells"]
 
         # 1. Attempt Gemini 2.0 Flash / Groq LLM Generation if API Key is configured
-        if settings.GEMINI_API_KEY and allowed("ai"):
+        if settings.GEMINI_API_KEY and ai_call_allowed():
             try:
                 llm_result = await cls._generate_via_gemini(
                     readiness_state=readiness_state,

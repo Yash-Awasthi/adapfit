@@ -8,11 +8,11 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.core.config import settings
 from app.core.dependencies import authenticate_websocket
 from app.core.gemini import DEFAULT_MODEL, extract_text, gemini_endpoint
-from app.core.privacy import allowed
 from app.services.rag_knowledge import rag_retriever
 from app.services.chat_actions import maybe_execute_action
 from app.services.coach_prompts import coach_prompts
 from app.services.safety_policy import screen_reply, triage
+from app.core.llm_quota import ai_call_allowed
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ async def _stream_gemini(prompt: str, history: list[dict], system: str = "") -> 
     contents.append({"role": "user", "parts": [{"text": prompt}]})
 
     key = settings.GEMINI_API_KEY
-    if not key or not allowed("ai"):
+    if not key or not ai_call_allowed():
         return ""
     url, headers = gemini_endpoint(key)
 
@@ -145,7 +145,7 @@ async def chat_websocket(websocket: WebSocket, user_id: str):
             response = ""
             model_used = ""
             # The websocket has no request context, so consent is checked for this account explicitly.
-            ai_ok = allowed("ai", user_id)
+            ai_ok = ai_call_allowed(user_id)
             if ai_ok and settings.GEMINI_API_KEY:
                 try:
                     response = await _stream_gemini(grounded_prompt, history, system=coach_prompts.BASE_SYSTEM)
