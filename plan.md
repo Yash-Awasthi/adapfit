@@ -1871,3 +1871,78 @@ yesterday in India before 05:30.
 Left: skin-spot calibration needs the owner's photos; non-English reply
 screening; Health Connect deletion and the no-check-in home screen still to
 be seen on a device.
+
+## Part 19 — User experience and quality (todo.md Phase 9)
+
+Measured at the start by walking the core journey on the emulator (debug
+build, real Postgres, real auth) and opening every screen by deep link.
+
+Defects found and fixed:
+
+- Nobody could sign up: `/privacy/consent/purposes` needed a token, so the
+  sign-up screen had no consent switches and every attempt ended at
+  "Consent needed". Now public.
+- Onboarding never ran. On Postgres the account row is the profile row, so a
+  profile "existed" from sign-up with column defaults (intermediate,
+  barbell); the app also stored a local stub profile after sign-up and
+  sign-in. Migration 010 adds `users.onboarded_at`, set by `POST /users`;
+  `GET /users/{id}` answers 404 until then, and the store loads the server
+  profile instead of the stub.
+- "Generate Workout" posted to `/workouts/generate` (405) and swallowed the
+  error; "Start Workout" never told the store which workout, so the active
+  screen bounced straight back; completion then posted to `/workouts/adhoc`
+  with a 422 (Postgres workouts had `id`, not `workout_id`, and exercises had
+  no name) and a 4xx was queued as "offline" while the app said "Workout
+  Complete". The repository now returns the same shape as memory mode and
+  keeps the app's workout id; a refused save says so.
+- With `AUTH_DISABLED` on (the local `.env`), an expired token was served as
+  the dev user instead of 401, so after 15 minutes the app read and wrote
+  another account's data. A token that is sent is now always checked.
+- The check-in said "Synced from Apple Health" on Android with nothing synced
+  (`'unavailable'` was treated as a source) and submitted the slider's
+  starting 8 hours as measured sleep; sleep is now sent only once set. Its
+  sliders were one accessibility node, so a screen reader could not pick a
+  value.
+- Home and the decision card did not refresh after a check-in; both reload on
+  focus. Sign-up's password meter called the strongest password "Very Weak"
+  (off by one). Android forms left a light band under the keyboard
+  (`KeyboardAvoidingView` "height" on top of `adjustResize`).
+- A "Low risk level" was shown with no conditions logged; it is now "—" and
+  labelled "Exercise caution". Settings had three notification switches
+  that changed nothing (the real ones are in `NotificationSetup`); deleted.
+  The "Synced" pill covered screen headers; it now shows only when something
+  is pending or failed.
+
+Built:
+
+- expo/expo#50364: when an Activity attaches to a process the task service
+  started headless, `RNHeadlessAppLoader.invalidateApp` does not destroy the
+  host but still reported success, so `TaskService` dropped the live task
+  manager and location events stopped reaching JS. Patched (patch-package,
+  `mobile/patches/`) to report "not invalidated" in that case. Verified on
+  the emulator: run started, process crashed with the foreground service
+  running, jobs restarted before JS, app opened: 41 jobs, 41 finished over a
+  minute, points uploaded.
+- Exact alarms: `SCHEDULE_EXACT_ALARM` declared; expo-notifications already
+  schedules exactly when it is granted. The medication screen explains the
+  one-hour window and opens the setting, rebuilding reminders on return.
+- Change password in Settings (fresh token pair stored; other devices signed
+  out); server reasons shown.
+- A connection banner when the server cannot be reached, so empty screens
+  are not read as "no data"; a render error shows "Try again" (Part 17).
+- Accessibility: labels and roles on about 55 icon-only or unlabeled controls,
+  radio roles on rating dots, light-theme muted text darkened to 4.75:1
+  (`src/theme/contrast.check.ts` checks every text token, in CI), rating rows
+  that fit large text.
+- `mobile/e2e` deleted (no runner, never ran). `test_mobile_api_paths.py`
+  reads nested and multi-line generics and now checks the HTTP method too;
+  it catches the `/workouts/generate` bug.
+
+Verified on the emulator: sign-up with consent, onboarding, home with no
+check-in, check-in, decision "Train as planned", workout generated, started,
+set logged, completed; all 66 screens reachable by deep link opened with
+no render error; token refresh after expiry; the run relaunch case above.
+
+Left: phone checks (camera heart rate, BLE strap, Health Connect deletion),
+the dev-only text console error, onboarding depth, localisation, and
+automated end-to-end tests.

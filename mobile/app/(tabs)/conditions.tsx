@@ -154,7 +154,7 @@ function Physio() {
       <Text style={styles.label}>Pain today: {pain}/10</Text>
       <View style={styles.row}>
         {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => (
-          <TouchableOpacity key={n} style={[styles.dot, n <= pain && { backgroundColor: TINT }]} onPress={() => setPain(n)} />
+          <TouchableOpacity key={n} accessibilityRole="radio" accessibilityLabel={`Pain ${n} of 10`} accessibilityState={{ selected: n === pain }} style={[styles.dot, n <= pain && { backgroundColor: TINT }]} onPress={() => setPain(n)} />
         ))}
       </View>
       <Btn label="Log today's pain" onPress={log} />
@@ -221,7 +221,7 @@ function Allergies() {
     <>
       <Text style={styles.label}>How bad today: {severity}/10</Text>
       <View style={styles.row}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <TouchableOpacity key={n} style={[styles.dot, n <= severity && { backgroundColor: TINT }]} onPress={() => setSeverity(n)} />)}
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <TouchableOpacity key={n} accessibilityRole="radio" accessibilityLabel={`Severity ${n} of 10`} accessibilityState={{ selected: n === severity }} style={[styles.dot, n <= severity && { backgroundColor: TINT }]} onPress={() => setSeverity(n)} />)}
       </View>
       {(Object.keys(flags) as (keyof typeof flags)[]).map((k) => (
         <TouchableOpacity key={k} onPress={() => setFlags({ ...flags, [k]: !flags[k] })}>

@@ -100,6 +100,7 @@ class StorageEngine:
             uid = user_data.get("id", str(uuid.uuid4()))
             user_data["id"] = uid
             user_data.setdefault("created_at", datetime.now(timezone.utc).isoformat())
+            user_data.setdefault("onboarded_at", user_data["created_at"])
             self.users[uid] = user_data
             await self._save()
             return user_data

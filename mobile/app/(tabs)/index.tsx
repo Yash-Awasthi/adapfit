@@ -3,7 +3,7 @@
  * Modern glassmorphism design with animated elements, health metrics, quick actions.
  * Uses Reanimated worklets for all animations (UI thread).
  */
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity,
   RefreshControl, useWindowDimensions,
@@ -11,7 +11,7 @@ import {
 
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, spacing, radius } from '../../src/theme';
 import { useGrid } from '../../src/theme/layout';
@@ -79,6 +79,7 @@ export default function HomeScreen() {
     recovery: '/recovery-logs?days=1',
     hydration: '/hydration/today',
   });
+  useFocusEffect(useCallback(() => { reload(); }, [reload]));
 
   // Only today's check-in describes today; an older one would show yesterday's numbers as today's.
   const last = asArray<RecoveryLog>(data.recovery?.items).slice(-1)[0];
@@ -148,7 +149,7 @@ export default function HomeScreen() {
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
               </Text>
             </View>
-            <TouchableOpacity style={styles.heroAvatar} onPress={() => router.push('/menu' as any)}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel="Open menu" style={styles.heroAvatar} onPress={() => router.push('/menu' as any)}>
               <Ionicons name="person" size={20} color="#FFF" />
             </TouchableOpacity>
           </View>

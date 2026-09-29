@@ -230,7 +230,7 @@ export const AnimatedHeader: React.FC<AnimatedHeaderProps> = ({ title, subtitle,
             {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
           </View>
           {rightAction && (
-            <TouchableOpacity onPress={rightAction.onPress} style={styles.headerAction}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={rightAction.icon.replace(/-/g, " ")} onPress={rightAction.onPress} style={styles.headerAction}>
               <Ionicons name={rightAction.icon as any} size={22} color="#FFF" />
             </TouchableOpacity>
           )}
@@ -242,7 +242,7 @@ export const AnimatedHeader: React.FC<AnimatedHeaderProps> = ({ title, subtitle,
             {subtitle && <Text style={styles.headerSubtitlePlain}>{subtitle}</Text>}
           </View>
           {rightAction && (
-            <TouchableOpacity onPress={rightAction.onPress} style={styles.headerActionPlain}>
+            <TouchableOpacity accessibilityRole="button" accessibilityLabel={rightAction.icon.replace(/-/g, " ")} onPress={rightAction.onPress} style={styles.headerActionPlain}>
               <Ionicons name={rightAction.icon as any} size={22} color={colors.primary} />
             </TouchableOpacity>
           )}

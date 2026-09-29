@@ -5,9 +5,9 @@
  * reasons behind the decision, never as a wall of readings the user has to
  * interpret themselves.
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, radius } from '../theme';
 import { getJson, asArray } from '../services/http';
@@ -46,7 +46,8 @@ export function TodayDecision() {
     setLoading(false);
   }, [userId]);
 
-  useEffect(() => { load(); }, [load]);
+  // Reload on every return to Home, so a check-in made on another screen shows at once.
+  useFocusEffect(useCallback(() => { load(); }, [load]));
 
   if (loading) {
     return (

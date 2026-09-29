@@ -41,38 +41,26 @@ Done in plan.md Part 17. Left:
 - iOS project, build profile, HealthKit entitlement and sync (deferred).
 - Expo past SDK 55 for the moderate advisories in `docs/SECURITY.md`.
 
-## Phase 9 — User experience and quality
+## Phase 9 — User experience and quality (rest)
+
+Done in plan.md Part 19. Left:
 
 - Stroke rehab, chronic disease management, hospital at home and wound
   assessment are API-only; design each with a clinician before giving it a screen.
 - Coach marketplace: rebuild only with verified, real practitioners.
-- `mobile/e2e` has no runner installed (no detox or jest) and is excluded from
-  the typecheck; install one or delete it.
-
 - API-only features still without a screen: peer support, vaccination records
   (health passport), accessible workout alternatives, the accessibility API.
-- `test_mobile_api_paths.py` misses calls whose generic type contains nested
-  `<...>` (for example `getJson<{ data: Record<string, any> }>(...)`); widen it.
-- 12 new hub and feature screens this phase have only been typechecked, never
-  run on a device.
-
-- With the user present, on their phone: camera heart rate, pose and sensors,
-  and a BLE heart-rate strap. Decide which wearables are worth keeping for launch.
-- Reminders are inexact alarms: Android gave a daily reminder a one-hour window.
-  Medication times may need exact alarms (`SCHEDULE_EXACT_ALARM`, user-granted).
-- Run recording hits expo/expo#50364: if the app is relaunched while a run's
-  location task is registered, fixes stop reaching JS (Finish now times out
-  instead of hanging). Patch expo-task-manager or move to a native service.
+- With the owner, on their phone: camera heart rate, pose and sensors, and a
+  BLE heart-rate strap; decide which wearables to keep for launch. Also a
+  Health Connect record deleted on the phone disappearing after a sync.
 - Sleep sounds stop listening if the screen turns off (JS timers pause); the
   screen stays on under a black overlay. Native metering would lift that.
-- Change-password screen (the API returns a fresh token pair; reset by email works).
-- Onboarding flow and first-run experience.
-- Navigation and information architecture for the reduced feature set.
-- Empty, loading and error states.
-- Accessibility (screen reader, contrast, text scaling).
-- Localisation completeness.
-- Performance and app size.
-- End-to-end tests for the core journeys.
+- A "Text strings must be rendered within a <Text>" console error appears in
+  development after some screen interactions; not yet traced to its screen.
+- Onboarding asks only name and gender; goal, level and equipment keep the
+  profile defaults until the user edits Personal Info.
+- Localisation completeness; performance and app size; end-to-end tests for
+  the core journeys (the adb walk in Part 19 is manual).
 
 ## Phase 10 — Launch readiness
 
