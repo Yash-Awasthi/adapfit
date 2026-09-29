@@ -183,7 +183,7 @@ export default function HrvScreen() {
               </Text>
             </>
           ) : (
-            <Text style={[typography.heading.h2, { color: '#fff', marginTop: 8 }]}>Add HRV to a check-in, or take a reading</Text>
+            <Text style={[typography.heading.h2, { color: '#fff', marginTop: 8, paddingLeft: 40 }]}>Add HRV to a check-in, or take a reading</Text>
           )}
         </LinearGradient>
 
@@ -311,5 +311,5 @@ const styles = StyleSheet.create({
   chipTextActive: { color: TINT, fontWeight: '700' },
   pacerWrap: { height: 180, alignItems: 'center', justifyContent: 'center', marginTop: 12 },
   pacer: { position: 'absolute', width: 150, height: 150, borderRadius: 75, backgroundColor: TINT + '40', borderWidth: 2, borderColor: TINT },
-  pacerText: { color: colors.text.primary, fontSize: 16, fontWeight: '700' },
+  pacerText: { color: colors.text.primary, fontSize: 14, fontWeight: '700', textAlign: 'center', maxWidth: 120 },
 });

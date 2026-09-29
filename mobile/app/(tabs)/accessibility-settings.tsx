@@ -168,7 +168,7 @@ export default function AccessibilitySettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0F172A' },
   header: { paddingTop: 50, paddingHorizontal: 20, paddingBottom: 16, backgroundColor: '#1E293B' },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#F8FAFC' },
+  headerTitle: { paddingLeft: 40, fontSize: 24, fontWeight: 'bold', color: '#F8FAFC' },
   headerSubtitle: { fontSize: 14, color: '#94A3B8', marginTop: 4 },
   content: { flex: 1, paddingHorizontal: 16, paddingTop: 16 },
   sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#94A3B8', marginBottom: 8, marginTop: 8, textTransform: 'uppercase', letterSpacing: 1 },

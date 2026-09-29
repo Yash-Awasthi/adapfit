@@ -40,7 +40,7 @@ interface ScreenWrapperProps {
 }
 
 export const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
-  children, title, subtitle, gradient, backable = true, rightAction,
+  children, title, subtitle, gradient, backable = false, rightAction,
   refreshing = false, onRefresh, loading = false, loadingType = 'spinner',
   empty = false, emptyIcon = 'document-text', emptyTitle = 'No Data',
   emptyMessage = 'Nothing to show here yet.', emptyAction,

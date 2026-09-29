@@ -96,10 +96,11 @@ export default function HomeScreen() {
     ? Math.round(((latest.soreness_score + latest.fatigue_score) / 2) * 10)
     : null;
 
-  const glassesTarget = 8;
+  // A glass is 250 ml everywhere (Dashboard, Wellness), so the same goal reads the same on every screen.
+  const glassMl = 250;
   const totalMl = asNumber(data.hydration?.total_ml);
-  const goalMl = asNumber(data.hydration?.daily_goal_ml, 2000);
-  const glassMl = Math.max(1, Math.round(goalMl / glassesTarget));
+  const goalMl = asNumber(data.hydration?.daily_goal_ml, 3000);
+  const glassesTarget = Math.max(1, Math.round(goalMl / glassMl));
   const waterIntake = Math.min(glassesTarget, Math.floor(totalMl / glassMl));
 
   const logGlass = async () => {

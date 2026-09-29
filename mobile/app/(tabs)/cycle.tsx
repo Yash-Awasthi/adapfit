@@ -394,7 +394,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'flex-end', gap: spacing.md,
     paddingHorizontal: spacing.screenPadding, paddingBottom: spacing.lg,
   },
-  headerTitle: { fontSize: 28, fontWeight: '800', color: colors.text.primary, letterSpacing: -0.5 },
+  headerTitle: { paddingLeft: 40, fontSize: 28, fontWeight: '800', color: colors.text.primary, letterSpacing: -0.5 },
   headerSubtitle: { fontSize: 14, color: colors.text.muted, marginTop: 4 },
   editButton: {
     width: 40, height: 40, borderRadius: 20, backgroundColor: colors.bg.card,

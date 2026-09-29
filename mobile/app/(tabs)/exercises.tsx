@@ -284,7 +284,7 @@ function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: theme.background, padding: 20 },
     header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 48, marginBottom: 12 },
-    title: { fontSize: 28, fontWeight: '700', color: theme.text },
+    title: { fontSize: 28, fontWeight: '700', color: theme.text, paddingLeft: 40 },
     count: { fontSize: 14, color: theme.textMuted },
     filterRow: { marginBottom: 8, maxHeight: 40 },
     filterChip: {

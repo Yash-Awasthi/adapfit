@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.deep },
   hero: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 24, borderBottomRightRadius: 24 },
   heroMuted: { paddingLeft: 40, color: 'rgba(255,255,255,0.8)', fontSize: 13 },
-  heroTitle: { color: '#fff', fontSize: 26, fontWeight: '800', marginTop: 6 },
+  heroTitle: { paddingLeft: 40, color: '#fff', fontSize: 26, fontWeight: '800', marginTop: 6 },
   list: { paddingHorizontal: spacing.screenPadding, marginTop: spacing.lg },
   section: { marginBottom: 12 },
   head: { flexDirection: 'row', alignItems: 'center', gap: 12 },

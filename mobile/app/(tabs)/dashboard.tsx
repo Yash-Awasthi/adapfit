@@ -206,7 +206,7 @@ export default function DashboardScreen() {
         setTodayData(prev => ({
           ...prev,
           water: Math.round((hyd.total_ml ?? 0) / 250),
-          waterGoal: Math.round((hyd.daily_goal_ml ?? 2000) / 250),
+          waterGoal: Math.round((hyd.daily_goal_ml ?? 3000) / 250),
         }));
       }
 

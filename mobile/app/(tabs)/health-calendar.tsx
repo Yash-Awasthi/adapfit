@@ -25,7 +25,7 @@ export default function HealthCalendarScreen() {
   return (
     <ScrollView style={ns.container}>
       <View style={ns.header}>
-        <Text style={typography.heading.h1 as any}>Health Calendar</Text>
+        <Text style={[typography.heading.h1 as any, { paddingLeft: 40 }]}>Health Calendar</Text>
         <Text style={typography.body.sm as any}>Track cycles, appointments & medications</Text>
       </View>
 

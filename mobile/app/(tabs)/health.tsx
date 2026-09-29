@@ -378,7 +378,7 @@ function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
     container: { flex: 1, backgroundColor: theme.background },
     voiceBar: {
       flexDirection: "row", alignItems: "center", gap: 10,
-      paddingHorizontal: 16, paddingVertical: 10, backgroundColor: theme.surface,
+      paddingHorizontal: 16, paddingTop: 96, paddingBottom: 10, backgroundColor: theme.surface,
       borderBottomWidth: 1, borderBottomColor: theme.border,
     },
     voiceBtn: {

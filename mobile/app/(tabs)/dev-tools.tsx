@@ -127,6 +127,7 @@ export default function DevToolsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScreenHeader
+        backable={false}
         title="Dev Tools"
         right={
           <TouchableOpacity accessibilityRole="button" accessibilityLabel="Save" onPress={handleSave} hitSlop={10}>

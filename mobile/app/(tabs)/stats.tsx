@@ -260,7 +260,7 @@ function makeStyles(theme: ReturnType<typeof useTheme>['theme']) {
     container: { flex: 1, backgroundColor: theme.background, padding: 20 },
     oneRmInput: { backgroundColor: theme.surface, color: theme.text, borderRadius: 10, padding: 10, marginBottom: 8 },
     oneRmBtn: { backgroundColor: theme.primary, color: '#fff', textAlign: 'center', padding: 12, borderRadius: 10, fontWeight: '700', overflow: 'hidden' },
-    title: { fontSize: 28, fontWeight: '700', color: theme.text, marginTop: 48, marginBottom: 16 },
+    title: { fontSize: 28, fontWeight: '700', color: theme.text, marginTop: 104, marginBottom: 16 },
     loadingText: { color: theme.textMuted, textAlign: 'center', marginTop: 100 },
 
     // Empty state

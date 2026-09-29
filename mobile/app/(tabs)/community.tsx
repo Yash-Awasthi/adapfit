@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg.deep },
   contentContainer: { paddingBottom: 100 },
   header: { paddingTop: 60, paddingBottom: 24, paddingHorizontal: spacing.screenPadding, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
-  headerTitle: { fontSize: 26, fontWeight: '800', color: '#FFF' },
+  headerTitle: { paddingLeft: 40, fontSize: 26, fontWeight: '800', color: '#FFF' },
   headerSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
 
   tabRow: { flexDirection: 'row', gap: spacing.sm, paddingHorizontal: spacing.screenPadding, marginTop: spacing.lg, marginBottom: spacing.md },
