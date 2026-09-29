@@ -22,9 +22,9 @@ os.environ["AUTH_DISABLED"] = "true"
 os.environ["ADAPFIT_DATA_DIR"] = tempfile.mkdtemp(prefix="adapfit-test-data-")
 
 
-def register_user(email: str, username: str, password: str = "Str0ngPassw0rd!") -> dict:
+def register_user(email: str, username: str, password: str = "Str0ngPassw0rd!", display_name: str = "") -> dict:
     """Register an account from synchronous test code."""
     from app.core.auth import user_manager
 
     consent = {"health_data": True, "ai": True, "sharing": True, "analytics": False}
-    return asyncio.run(user_manager.register(email, username, password, birth_date="1990-01-01", consent=consent))
+    return asyncio.run(user_manager.register(email, username, password, display_name=display_name, birth_date="1990-01-01", consent=consent))

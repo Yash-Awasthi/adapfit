@@ -11,7 +11,7 @@
     "release:apk": "cd android && gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "release:aab": "cd android && gradlew bundleRelease",
     "postinstall": "patch-package",
-    "e2e": "maestro test e2e/core-journey.yaml"
+    "e2e": "sh e2e/run.sh"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

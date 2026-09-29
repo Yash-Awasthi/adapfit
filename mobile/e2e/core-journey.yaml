@@ -1,12 +1,12 @@
 # Sign-up to a finished workout against the API the installed build points at.
+# Start from a fresh install (e2e/run.sh does that); some phones refuse to clear app data over adb.
 # Health, location and microphone prompts are left for a person; this flow never touches them.
 appId: com.adapfit.app
 env:
   PASSWORD: Walkpass123
 ---
 - evalScript: ${output.suffix = String(Date.now())}
-- launchApp:
-    clearState: true
+- launchApp
 - tapOn: Create Account
 - tapOn: John Doe
 - inputText: E2E Runner
@@ -14,29 +14,34 @@ env:
 - inputText: e2e${output.suffix}@example.com
 - tapOn: johndoe
 - inputText: e2e${output.suffix}
+- hideKeyboard
+- scrollUntilVisible:
+    element: Min 8 characters
 - tapOn: Min 8 characters
 - inputText: ${PASSWORD}
+- hideKeyboard
+- scrollUntilVisible:
+    element: Repeat password
 - tapOn: Repeat password
 - inputText: ${PASSWORD}
+- hideKeyboard
+- scrollUntilVisible:
+    element: YYYY-MM-DD
 - tapOn: YYYY-MM-DD
 - inputText: 2000-01-15
 - hideKeyboard
 - scrollUntilVisible:
     element: Store and use my health and fitness data
 - tapOn: Store and use my health and fitness data
+# At the bottom of the form the title has scrolled away, so this is the button.
 - scrollUntilVisible:
-    element:
-      text: Create Account
-      index: 1
-- tapOn:
-    text: Create Account
-    index: 1
+    element: Already have an account?
+- tapOn: Create Account
 
 # Onboarding
 - extendedWaitUntil:
-    visible: Get Started
+    visible: Fitness
     timeout: 90000
-- tapOn: Get Started
 - tapOn: Fitness
 - tapOn: Continue
 - tapOn: Male
