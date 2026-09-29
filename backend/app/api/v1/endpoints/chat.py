@@ -112,6 +112,7 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
     """Fallback to Groq Llama model when Gemini is unavailable."""
     key = api_key or settings.GROQ_API_KEY
     if not key or not ai_call_allowed():
+        logger.warning("Fallback LLM skipped: key set=%s", bool(key))
         return None
 
     url = f"{settings.GROQ_BASE_URL}/chat/completions"
@@ -134,7 +135,10 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
                 headers={"Authorization": f"Bearer {key}"}
             )
             if resp.status_code == 200:
-                return resp.json()["choices"][0]["message"]["content"] or None
+                text = resp.json()["choices"][0]["message"]["content"]
+                if not text:
+                    logger.warning("Fallback LLM returned no text (model spent its budget thinking?)")
+                return text or None
             logger.warning("Fallback LLM call failed: %s %s", resp.status_code, resp.text[:300])
     except Exception as exc:
         logger.warning("Fallback LLM call raised: %r", exc)
