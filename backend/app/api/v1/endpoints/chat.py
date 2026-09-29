@@ -124,19 +124,20 @@ async def _call_groq(prompt: str, system: str = "", api_key: Optional[str] = Non
         "model": model or settings.GROQ_MODEL,
         "messages": messages,
         "temperature": 0.7,
-        "max_tokens": 300,
+        "max_tokens": 900,
     }
 
     try:
-        async with httpx.AsyncClient(timeout=12.0) as client:
+        async with httpx.AsyncClient(timeout=45.0) as client:
             resp = await client.post(
                 url, json=payload,
                 headers={"Authorization": f"Bearer {key}"}
             )
             if resp.status_code == 200:
-                return resp.json()["choices"][0]["message"]["content"]
-    except Exception:
-        pass
+                return resp.json()["choices"][0]["message"]["content"] or None
+            logger.warning("Fallback LLM call failed: %s %s", resp.status_code, resp.text[:300])
+    except Exception as exc:
+        logger.warning("Fallback LLM call raised: %r", exc)
     return None
 
 
