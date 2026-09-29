@@ -1,0 +1,71 @@
+# Sign-up to a finished workout against the API the installed build points at.
+# Health, location and microphone prompts are left for a person; this flow never touches them.
+appId: com.adapfit.app
+env:
+  PASSWORD: Walkpass123
+---
+- evalScript: ${output.suffix = String(Date.now())}
+- launchApp:
+    clearState: true
+- tapOn: Create Account
+- tapOn: John Doe
+- inputText: E2E Runner
+- tapOn: you@example.com
+- inputText: e2e${output.suffix}@example.com
+- tapOn: johndoe
+- inputText: e2e${output.suffix}
+- tapOn: Min 8 characters
+- inputText: ${PASSWORD}
+- tapOn: Repeat password
+- inputText: ${PASSWORD}
+- tapOn: YYYY-MM-DD
+- inputText: 2000-01-15
+- hideKeyboard
+- scrollUntilVisible:
+    element: Store and use my health and fitness data
+- tapOn: Store and use my health and fitness data
+- scrollUntilVisible:
+    element:
+      text: Create Account
+      index: 1
+- tapOn:
+    text: Create Account
+    index: 1
+
+# Onboarding
+- extendedWaitUntil:
+    visible: Get Started
+    timeout: 90000
+- tapOn: Get Started
+- tapOn: Fitness
+- tapOn: Continue
+- tapOn: Male
+- tapOn: Continue
+- tapOn: Phone Only
+- tapOn: Continue
+- tapOn: Moderately Active
+- tapOn: Start Using AdapFit
+
+# Morning check-in
+- extendedWaitUntil:
+    visible: Check in
+    timeout: 30000
+- tapOn: Check in
+- tapOn: Sleep hours 7
+- tapOn: Submit Check-in
+- assertVisible: Today's Recovery
+- assertNotVisible: No check-in
+
+# Workout: generate, do one set, finish
+- tapOn: Start workout
+- extendedWaitUntil:
+    visible: Start Workout
+    timeout: 30000
+- scrollUntilVisible:
+    element: Start Workout
+- tapOn: Start Workout
+- tapOn: Complete Set
+- tapOn: Finish Workout
+- assertVisible: Post-Workout Feedback
+- tapOn: Submit Feedback
+- assertVisible: Adaptive Maintenance.*

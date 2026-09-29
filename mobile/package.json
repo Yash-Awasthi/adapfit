@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "release:apk": "cd android && gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a",
     "release:aab": "cd android && gradlew bundleRelease",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "e2e": "maestro test e2e/core-journey.yaml"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
