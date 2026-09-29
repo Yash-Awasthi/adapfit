@@ -72,5 +72,8 @@
     "typescript": "~5.8.0"
   },
   "private": true,
-  "allowScripts": true
+  "allowScripts": true,
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
 }
