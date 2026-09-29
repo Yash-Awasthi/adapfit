@@ -1989,3 +1989,23 @@ tomorrow. `docs/LLM_CALLS.md` gives the token sizes behind the cap.
 - Legal: the terms say the app is free and takes no payment; production
   startup warns while `[COMPANY LEGAL NAME]` placeholders remain.
 1,074 backend tests pass.
+
+## Part 22 — Release build
+
+`npm run release:apk` (arm64-v8a) produced `app-release.apk`, 64 MB, signed
+with the AdapFit release key (CN=AdapFit), with `SCHEDULE_EXACT_ALARM` and
+without `SYSTEM_ALERT_WINDOW`. Two fixes were needed:
+
+- The release native build looped on "build.ninja still dirty": the CMake
+  tree of `react-native-vision-camera-worklets` under
+  `node_modules/.../.cxx/RelWithDebInfo/...` put prefab files at 255 to 262
+  characters, past Windows' 260, so ninja could not see them. The root
+  `android/build.gradle` now stages every native module's CMake build under
+  `%SystemDrive%/cxx/` on Windows.
+- Release builds refuse plain HTTP. `network_security_config.xml` allows it
+  to `localhost` only, so a release APK can reach a development server
+  through `adb reverse`; every other host stays HTTPS. Android backup of app
+  data is off (`allowBackup=false`) for a health app.
+
+Not yet done: installing it on the owner's phone and walking the journey
+there (needs the owner present).
