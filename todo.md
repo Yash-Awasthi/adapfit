@@ -57,8 +57,6 @@ Done in plan.md Part 19. Left:
   screen stays on under a black overlay. Native metering would lift that.
 - A "Text strings must be rendered within a <Text>" console error appears in
   development after some screen interactions; not yet traced to its screen.
-- Onboarding asks only name and gender; goal, level and equipment keep the
-  profile defaults until the user edits Personal Info.
 - Localisation completeness; performance and app size; end-to-end tests for
   the core journeys (the adb walk in Part 19 is manual).
 

@@ -2020,3 +2020,16 @@ after three reports; a reported reply is hidden from its reporter. Blocking
 hides everything the author posts or replies, for the blocker only. Sign-up
 refuses anyone under 13 (Play's Families policy would otherwise apply); 13 to
 17 still need a guardian. 1,077 backend tests pass; typecheck clean.
+
+## Part 24 — Onboarding depth
+
+The four-step onboarding (goals, about you, devices, activity level and
+sleep target) existed in `app/onboarding.tsx` but nothing led to it: the
+welcome screen went straight to Home, so every plan ran on column defaults.
+The welcome screen now continues into it (starting at goals, 4 steps). Walking
+it on the emulator found that its save failed on Postgres: the API's goal
+`general_fitness` broke the `users` CHECK constraint, which still allowed
+only `general` (migration 011). `scripts/verify_postgres.py` now saves every
+goal and level the API accepts. Verified on the emulator: sign-in, welcome,
+goals, about you, devices, activity and sleep target, profile and sleep
+baseline saved, Home.

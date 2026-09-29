@@ -58,7 +58,8 @@ export default function OnboardingScreen() {
           preferred_days_per_week: user.preferred_days_per_week,
         });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        router.replace('/(tabs)');
+        // Goals, level, training days and sleep target come next; without them the plan runs on defaults.
+        router.replace('/onboarding' as any);
       } else {
         const detail = await res.text().catch(() => '');
         Alert.alert('Sign-up failed', `Server returned ${res.status}.${detail ? ` ${detail.slice(0, 200)}` : ''}`);

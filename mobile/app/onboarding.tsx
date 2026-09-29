@@ -362,7 +362,8 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const userId = useUserStore((state) => state.userId);
   const updateProfile = useUserStore((state) => state.updateProfile);
-  const [step, setStep] = useState(0);
+  // The welcome and name screen come first (onboarding-welcome), so this starts at goals.
+  const [step, setStep] = useState(1);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [gender, setGender] = useState('');
   const [age, setAge] = useState('');
@@ -416,15 +417,15 @@ export default function OnboardingScreen() {
     if (step < 4) setStep(step + 1);
     else finish();
   };
-  const goBack = () => { if (step > 0) setStep(step - 1); };
+  const goBack = () => { if (step > 1) setStep(step - 1); };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       {step > 0 && (
         <View style={styles.topBar}>
-          <StepIndicator current={step} total={5} />
-          <Text style={[typography.body.sm, { color: colors.text.muted }]}>Step {step} of 5</Text>
+          <StepIndicator current={step - 1} total={4} />
+          <Text style={[typography.body.sm, { color: colors.text.muted }]}>Step {step} of 4</Text>
         </View>
       )}
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
