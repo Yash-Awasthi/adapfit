@@ -94,10 +94,10 @@ export default function FamilyScreen() {
                 {open === c.connection_id && m && (
                   <View style={styles.box}>
                     {m.shared?.length === 0 && <Text style={styles.sub}>They have not shared anything yet.</Text>}
-                    {m.recovery && <Text style={styles.body}>Recovery {m.recovery.recovery_score ?? '--'} ({m.recovery.readiness_state ?? 'no check-in'}) on {m.recovery.log_date}</Text>}
-                    {m.sleep && <Text style={styles.body}>Last night: {m.sleep.total_sleep_hours ?? '--'} h sleep</Text>}
+                    {!!m.recovery && <Text style={styles.body}>Recovery {m.recovery.recovery_score ?? '--'} ({m.recovery.readiness_state ?? 'no check-in'}) on {m.recovery.log_date}</Text>}
+                    {!!m.sleep && <Text style={styles.body}>Last night: {m.sleep.total_sleep_hours ?? '--'} h sleep</Text>}
                     {m.workouts_last_7_days !== undefined && <Text style={styles.body}>{m.workouts_last_7_days} workouts this week</Text>}
-                    {m.emergency && (
+                    {!!m.emergency && (
                       <Text style={styles.body}>Blood type {m.emergency.blood_type ?? '--'} · allergies {asArray<string>(m.emergency.allergies).join(', ') || 'none recorded'}</Text>
                     )}
                   </View>

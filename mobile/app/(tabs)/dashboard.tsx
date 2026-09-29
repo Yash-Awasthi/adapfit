@@ -96,7 +96,7 @@ function MedicationCard({ name, dosage, time, taken }: { name: string; dosage: s
   return (
     <TouchableOpacity activeOpacity={0.7} style={[styles.medCard, taken && styles.medCardTaken]}>
       <View style={[styles.medCheck, { backgroundColor: taken ? colors.health.success : 'transparent', borderColor: taken ? colors.health.success : colors.surface.border }]}>
-        {taken && <Ionicons name="checkmark" size={12} color="#fff" />}
+        {!!taken && <Ionicons name="checkmark" size={12} color="#fff" />}
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[typography.body.md, { color: taken ? colors.text.muted : colors.text.primary, textDecorationLine: taken ? 'line-through' : 'none' }]}>{name}</Text>

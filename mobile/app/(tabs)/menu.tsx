@@ -164,7 +164,7 @@ function SystemRow({ icon: Icon, label, sub, color, onPress, right, theme }: any
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[styles.sysLabel, { color: theme.text }]}>{label}</Text>
-        {sub && <Text style={[styles.sysSub, { color: theme.textMuted }]}>{sub}</Text>}
+        {!!sub && <Text style={[styles.sysSub, { color: theme.textMuted }]}>{sub}</Text>}
       </View>
       {right}
     </TouchableOpacity>

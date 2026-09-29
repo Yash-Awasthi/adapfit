@@ -187,7 +187,7 @@ export default function ExercisesScreen() {
       )}
 
       {/* Exercise Detail & 1RM Modal */}
-      {selectedExercise && (
+      {!!selectedExercise && (
         <Modal visible={!!selectedExercise} transparent animationType="slide">
           <View style={s.modalOverlay}>
             <View style={s.modalCard}>
@@ -201,7 +201,7 @@ export default function ExercisesScreen() {
               </View>
 
               <ScrollView showsVerticalScrollIndicator={false}>
-                {selectedExercise.gif_url && (
+                {!!selectedExercise.gif_url && (
                   <Image
                     source={{ uri: selectedExercise.gif_url }}
                     style={s.modalImage}

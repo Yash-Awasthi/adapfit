@@ -241,7 +241,7 @@ export default function FormCheckerScreen() {
           <Text style={s.repLabel}>Reps</Text>
         </Animated.View>
 
-        {grade && (
+        {!!grade && (
           <View style={s.gradeRow}>
             <View style={[s.gradePill, { borderColor: GRADE_COLOR[grade] }]}>
               <Text style={[s.gradePillText, { color: GRADE_COLOR[grade] }]}>Grade {grade}</Text>
@@ -249,7 +249,7 @@ export default function FormCheckerScreen() {
           </View>
         )}
 
-        {lastMessage && (
+        {!!lastMessage && (
           <View style={s.messageBox}>
             <AlertTriangle size={14} color={theme.warning} />
             <Text style={s.messageText}>{lastMessage}</Text>

@@ -82,7 +82,7 @@ export default function BodyScreen() {
         <LinearGradient colors={[TINT, '#C2410C', colors.bg.deep]} style={styles.hero}>
           <Text style={styles.heroMuted}>Body</Text>
           <Text style={styles.heroTitle}>{entries.find((e) => e.weight_kg)?.weight_kg ? `${entries.find((e) => e.weight_kg).weight_kg} kg` : 'Log your first measurement'}</Text>
-          {t30 && <Text style={styles.heroMuted}>30 days: weight {fmt(t30.weight_change, 'kg')} · waist {fmt(t30.waist_change, 'cm')}</Text>}
+          {!!t30 && <Text style={styles.heroMuted}>30 days: weight {fmt(t30.weight_change, 'kg')} · waist {fmt(t30.waist_change, 'cm')}</Text>}
         </LinearGradient>
 
         <View style={styles.section}>

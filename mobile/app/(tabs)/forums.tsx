@@ -398,7 +398,7 @@ export default function ForumsScreen() {
         />
       )}
 
-      {openPost && (
+      {!!openPost && (
         <ThreadModal
           post={openPost}
           userId={userId}
@@ -406,7 +406,7 @@ export default function ForumsScreen() {
           onChanged={load}
         />
       )}
-      {composing && (
+      {!!composing && (
         <ComposeModal userId={userId} onClose={() => setComposing(false)} onCreated={load} />
       )}
     </View>

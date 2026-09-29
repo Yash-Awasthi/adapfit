@@ -55,8 +55,6 @@ Done in plan.md Part 19. Left:
   Health Connect record deleted on the phone disappearing after a sync.
 - Sleep sounds stop listening if the screen turns off (JS timers pause); the
   screen stays on under a black overlay. Native metering would lift that.
-- A "Text strings must be rendered within a <Text>" console error appears in
-  development after some screen interactions; not yet traced to its screen.
 - Localisation completeness; performance and app size; end-to-end tests for
   the core journeys (the adb walk in Part 19 is manual).
 

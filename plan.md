@@ -2033,3 +2033,12 @@ only `general` (migration 011). `scripts/verify_postgres.py` now saves every
 goal and level the API accepts. Verified on the emulator: sign-in, welcome,
 goals, about you, devices, activity and sleep target, profile and sleep
 baseline saved, Home.
+
+## Part 25 — Stray text renders
+
+`{value && <View/>}` renders the value itself when it is `""` or `0`, which
+React Native reports as "Text strings must be rendered within a <Text>
+component" (and shows a stray "0" on screen). 187 such sites in 68 screens
+read server strings or numbers (`desc`, `next_step`, `target_rpe`,
+`encouragement`...); all now use `{!!value && ...}`, identical for booleans.
+The onboarding's "Sedentary" icon name was invalid (`-bed`).

@@ -155,7 +155,7 @@ export default function CommunityScreen() {
         ))}
       </View>
 
-      {loading && <Text style={styles.emptyText}>Loading…</Text>}
+      {!!loading && <Text style={styles.emptyText}>Loading…</Text>}
 
       {!loading && activeTab === 'challenges' && (
         challenges.length === 0 ? (

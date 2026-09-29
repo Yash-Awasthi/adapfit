@@ -47,7 +47,7 @@ const DEVICE_OPTIONS = [
 ];
 
 const ACTIVITY_LEVELS = [
-  { id: 'sedentary', label: 'Sedentary', desc: 'Little to no exercise', icon: '-bed', color: '#64748B' },
+  { id: 'sedentary', label: 'Sedentary', desc: 'Little to no exercise', icon: 'bed', color: '#64748B' },
   { id: 'light', label: 'Lightly Active', desc: '1-3 days/week', icon: 'walk', color: '#22C55E' },
   { id: 'moderate', label: 'Moderately Active', desc: '3-5 days/week', icon: 'bicycle', color: '#F59E0B' },
   { id: 'very', label: 'Very Active', desc: '6-7 days/week', icon: 'fitness', color: '#F97316' },
@@ -94,9 +94,9 @@ function SelectableCard({ icon, label, desc, color, selected, onPress }: {
       </View>
       <View style={{ flex: 1 }}>
         <Text style={[typography.body.md, { color: selected ? color : colors.text.primary, fontWeight: selected ? '700' : '500' }]}>{label}</Text>
-        {desc && <Text style={[typography.body.sm, { color: colors.text.muted, marginTop: 2 }]}>{desc}</Text>}
+        {!!desc && <Text style={[typography.body.sm, { color: colors.text.muted, marginTop: 2 }]}>{desc}</Text>}
       </View>
-      {selected && (
+      {!!selected && (
         <View style={[styles.checkCircle, { backgroundColor: color }]}>
           <Ionicons name="checkmark" size={14} color="#fff" />
         </View>

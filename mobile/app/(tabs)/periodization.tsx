@@ -108,7 +108,7 @@ export default function PeriodizationScreen() {
         ))}
       </View>
 
-      {plan && (
+      {!!plan && (
         <>
           <View style={s.planHeader}>
             <Calendar size={16} color={theme.primaryLight} />

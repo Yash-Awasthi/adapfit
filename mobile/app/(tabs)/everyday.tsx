@@ -23,7 +23,7 @@ function Section({ icon, title, sub, children }: { icon: string; title: string; 
         <View style={{ flex: 1 }}><Text style={styles.title}>{title}</Text><Text style={styles.sub}>{sub}</Text></View>
         <Ionicons name={open ? 'chevron-up' : 'chevron-down'} size={18} color={colors.text.muted} />
       </TouchableOpacity>
-      {open && <View style={{ marginTop: 12 }}>{children}</View>}
+      {!!open && <View style={{ marginTop: 12 }}>{children}</View>}
     </GlassCard>
   );
 }
@@ -154,7 +154,7 @@ function Travel() {
           <TouchableOpacity key={d.id} style={styles.chip} onPress={() => choose(d.id)}><Text style={styles.chipText}>{d.id.replace(/_/g, ' ')}</Text></TouchableOpacity>
         ))}
       </View>
-      {plan && (
+      {!!plan && (
         <View style={styles.result}>
           <Text style={styles.itemTitle}>{String(plan.destination).replace(/_/g, ' ')}</Text>
           {asArray<string>(plan.health_risks).length > 0 && <Text style={styles.body}>Risks: {plan.health_risks.join(', ').replace(/_/g, ' ')}</Text>}

@@ -83,7 +83,7 @@ const BPMSection: React.FC = () => {
           <View style={styles.bpmCenter}>
             <ScoreRing score={bpm} size={130} strokeWidth={8} color={bpmColor} label="BPM" />
             <View style={styles.bpmMetaRow}>
-              {hrv && (
+              {!!hrv && (
                 <View style={styles.bpmMetaItem}>
                   <Ionicons name="pulse" size={14} color={colors.health.calm} />
                   <Text style={[typography.body.sm, { color: colors.health.calm }]}> {hrv.toFixed(0)}ms</Text>

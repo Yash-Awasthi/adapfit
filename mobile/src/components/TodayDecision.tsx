@@ -114,7 +114,7 @@ export function TodayDecision() {
         />
       </TouchableOpacity>
 
-      {showWhy && (
+      {!!showWhy && (
         <View style={styles.reasons}>
           {reasons.map((r) => (
             <View key={r} style={styles.reasonRow}>

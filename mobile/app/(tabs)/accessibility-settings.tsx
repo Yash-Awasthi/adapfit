@@ -93,7 +93,7 @@ export default function AccessibilitySettingsScreen() {
             </View>
             <Switch value={voiceControl} onValueChange={setVoiceControl} trackColor={{ true: '#3B82F6' }} />
           </View>
-          {voiceControl && (
+          {!!voiceControl && (
             <View style={styles.voiceCommands}>
               <Text style={styles.voiceTitle}>Voice Commands:</Text>
               {['"Go home"', '"Start workout"', '"Log water"', '"Emergency"', '"Check heart rate"'].map(cmd => (

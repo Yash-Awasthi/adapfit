@@ -209,7 +209,7 @@ export default function MindScreen() {
           </View>
         </LinearGradient>
 
-        {active && (
+        {!!active && (
           <View style={styles.section}>
             <GlassCard>
               <Text style={styles.muted}>{active.title} · question {answers.length + 1} of {active.questions.length}</Text>
@@ -225,12 +225,12 @@ export default function MindScreen() {
           </View>
         )}
 
-        {lastResult && (
+        {!!lastResult && (
           <View style={styles.section}>
             <GlassCard style={{ borderLeftWidth: 3, borderLeftColor: lastResult.crisis ? '#EF4444' : TINT }}>
               <Text style={styles.cardTitle}>{lastResult.title}: {lastResult.score}/{lastResult.max_score} ({lastResult.range})</Text>
               <Text style={styles.body}>{lastResult.next_step}</Text>
-              {lastResult.crisis && <Text style={[styles.body, { color: '#EF4444' }]}>{lastResult.crisis.message}</Text>}
+              {!!lastResult.crisis && <Text style={[styles.body, { color: '#EF4444' }]}>{lastResult.crisis.message}</Text>}
               <Text style={styles.muted}>A screening score, not a diagnosis.</Text>
             </GlassCard>
           </View>

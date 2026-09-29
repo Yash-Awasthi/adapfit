@@ -117,7 +117,7 @@ export default function RunRecordScreen() {
         </View>
       )}
 
-      {run && (
+      {!!run && (
         <View style={s.stats}>
           <Text style={s.big}>{(meters / 1000).toFixed(2)}<Text style={s.unit}> km</Text></Text>
           <View style={s.row}>
@@ -128,7 +128,7 @@ export default function RunRecordScreen() {
         </View>
       )}
 
-      {result && (
+      {!!result && (
         <View style={s.stats}>
           <Text style={s.big}>{result.stats.distance_km.toFixed(2)}<Text style={s.unit}> km</Text></Text>
           <View style={s.row}>

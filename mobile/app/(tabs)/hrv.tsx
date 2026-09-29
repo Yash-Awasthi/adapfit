@@ -223,12 +223,12 @@ export default function HrvScreen() {
                 <Text style={styles.primaryBtnText}>Start reading</Text>
               </TouchableOpacity>
             )}
-            {report && (
+            {!!report && (
               <View style={styles.reportGrid}>
                 <Metric label="RMSSD" value={`${Math.round(report.time_domain.rmssd)} ms`} />
                 <Metric label="SDNN" value={`${Math.round(report.time_domain.sdnn)} ms`} />
                 <Metric label="Heart rate" value={`${Math.round(report.time_domain.hr_mean)} bpm`} />
-                {report.frequency_domain && <Metric label="LF/HF" value={report.frequency_domain.lf_hf_ratio.toFixed(2)} />}
+                {!!report.frequency_domain && <Metric label="LF/HF" value={report.frequency_domain.lf_hf_ratio.toFixed(2)} />}
                 <Text style={styles.helperText}>
                   Signal quality {Math.round(report.quality_score)}/100 · {report.artifacts.found} irregular beats corrected. {report.interpretation}
                 </Text>
@@ -260,7 +260,7 @@ export default function HrvScreen() {
                 <Text style={styles.primaryBtnText}>Start 5-minute session</Text>
               </TouchableOpacity>
             )}
-            {coherence && (
+            {!!coherence && (
               <Text style={styles.bodyText}>
                 Coherence {Math.round(coherence.coherence_score * 100)}/100 ({coherence.coherence_level}) · you breathed at {coherence.breathing_rate_bpm} per minute.
               </Text>

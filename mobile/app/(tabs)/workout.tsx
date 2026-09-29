@@ -185,7 +185,7 @@ export default function WorkoutScreen() {
           </View>
         )}
 
-        {suggestion && (
+        {!!suggestion && (
           <GlassCard variant="primary" style={styles.suggestionCard}>
             <View style={styles.suggestionHeader}>
               <Ionicons name="sparkles" size={14} color={colors.primaryLight} />
@@ -266,7 +266,7 @@ export default function WorkoutScreen() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.workoutTitle}>{workout.title}</Text>
-                  {workout.created_at && (
+                  {!!workout.created_at && (
                     <View style={styles.workoutDate}>
                       <Ionicons name="calendar" size={10} color={colors.text.muted} />
                       <Text style={styles.workoutDateText}>{formatDate(workout.created_at)}</Text>
@@ -294,7 +294,7 @@ export default function WorkoutScreen() {
                         {ex.sets} sets × {ex.target_reps} • {ex.target_muscle}
                       </Text>
                     </View>
-                    {ex.target_rpe && (
+                    {!!ex.target_rpe && (
                       <View style={styles.rpeBadge}>
                         <Text style={styles.rpeText}>RPE {ex.target_rpe}</Text>
                       </View>

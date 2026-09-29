@@ -75,7 +75,7 @@ function OneRepMax({ s }: { s: any }) {
         <TextInput key={ph} style={s.oneRmInput} placeholder={ph} placeholderTextColor="#888" value={v} onChangeText={set} keyboardType={kb} />
       ))}
       <Text style={s.oneRmBtn} onPress={run} accessibilityRole="button">Estimate</Text>
-      {out && (
+      {!!out && (
         <Text style={s.emptySubtext}>
           About {Math.round(out.estimated_1rm)} kg for one rep (Epley){out.level ? ` · ${out.level} for your bodyweight` : ''}. Test a true max only with a spotter.
         </Text>
@@ -208,7 +208,7 @@ export default function StatsScreen() {
         </View>
       )}
 
-      {form?.today && (
+      {!!form?.today && (
         <View style={s.section}>
           <Text style={s.sectionTitle}>Fitness, Fatigue & Form</Text>
           <View style={s.summaryGrid}>
@@ -223,7 +223,7 @@ export default function StatsScreen() {
         </View>
       )}
 
-      {tid?.distribution && (
+      {!!tid?.distribution && (
         <View style={s.section}>
           <Text style={s.sectionTitle}>Intensity Mix (last 4 weeks)</Text>
           {(['easy', 'moderate', 'hard'] as const).map((k) => (
