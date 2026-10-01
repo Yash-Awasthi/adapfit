@@ -5,7 +5,7 @@
  */
 const BASE = process.env.EXPO_PUBLIC_LLM_BASE_URL ?? '';
 const KEY = process.env.EXPO_PUBLIC_LLM_KEY ?? '';
-const MODELS = (process.env.EXPO_PUBLIC_LLM_MODELS ?? '').split(',').map((m) => m.trim()).filter(Boolean);
+const MODELS = (process.env.EXPO_PUBLIC_LLM_MODELS ?? '').split(',').map((m: string) => m.trim()).filter(Boolean);
 
 export const directLlmEnabled = !!(BASE && KEY && MODELS.length);
 

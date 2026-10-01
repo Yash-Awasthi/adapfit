@@ -28,3 +28,25 @@ def register_user(email: str, username: str, password: str = "Str0ngPassw0rd!", 
 
     consent = {"health_data": True, "ai": True, "sharing": True, "analytics": False}
     return asyncio.run(user_manager.register(email, username, password, display_name=display_name, birth_date="1990-01-01", consent=consent))
+
+
+def iter_api_routes(app):
+    """Flatten FastAPI's route tree to (path, methods, endpoint) triples.
+
+    include_router no longer copies sub-routes into app.routes as flat APIRoutes;
+    it mounts an _IncludedRouter wrapper, so a direct scan of app.routes misses
+    almost everything. Recurse through each wrapper's included router, carrying
+    the include prefix, to recover the real served paths.
+    """
+    from fastapi.routing import APIRoute
+
+    def walk(routes, base=""):
+        for r in routes:
+            if isinstance(r, APIRoute):
+                yield base + r.path, getattr(r, "methods", None) or set(), r.endpoint
+            else:
+                ctx = getattr(r, "include_context", None)
+                if ctx is not None:
+                    yield from walk(ctx.included_router.routes, base + (ctx.prefix or ""))
+
+    yield from walk(app.routes)
